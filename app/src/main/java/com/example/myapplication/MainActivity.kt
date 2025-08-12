@@ -34,6 +34,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
@@ -42,12 +44,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    containerColor = Color.Red
-                ) {
-                    LoginScreen()
-                }
+                MyApp()  // ✅ 调用 MyApp
             }
         }
     }
@@ -55,9 +52,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun LoginScreen(
-    onLoginClick: () -> Unit = {},
-    onRegisterClick: () -> Unit = {},
-    onForgetPasswordClick: () -> Unit = {}
+
+    navController: NavHostController
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -118,7 +114,7 @@ fun LoginScreen(
 
             // 登录按钮
             Button(
-                onClick = onLoginClick,
+                onClick = {navController.navigate("login_success")},
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
@@ -126,11 +122,11 @@ fun LoginScreen(
             }
 
             // 额外按钮
-            TextButton(onClick = onRegisterClick) {
+            TextButton(onClick = { /* TODO: Handle register click */ }) {
                 Text("Register", fontSize = 20.sp)
             }
 
-            TextButton(onClick = onForgetPasswordClick) {
+            TextButton(onClick = { /* TODO: Handle forgot password click */ }) {
                 Text("Forgot Password?", fontSize = 20.sp)
             }
 
@@ -143,6 +139,8 @@ fun LoginScreen(
 @Composable
 fun LoginScreenPreview() {
     MyApplicationTheme {
-        LoginScreen()
+        val navController = rememberNavController()
+        LoginScreen(navController = navController)
     }
 }
+
