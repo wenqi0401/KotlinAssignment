@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,7 +45,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
-                MyApp()  // ✅ 调用 MyApp
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = Color.Red  // ← 改成你想要的颜色
+                ) {
+                    MyApp()
+                }
             }
         }
     }
@@ -61,7 +67,8 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .background(Color.Red), // 设置背景颜色
         contentAlignment = Alignment.Center
     ) {
         Column(
