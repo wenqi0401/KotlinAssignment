@@ -21,6 +21,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,9 +36,13 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.ui.theme.LoginViewModel
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.ui.theme.loginUiState
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,10 +64,13 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun LoginScreen(
 
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: LoginViewModel = viewModel()
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    val uiState = viewModel.uiState.collectAsState()
+
 
     Box(
         modifier = Modifier
@@ -92,8 +100,8 @@ fun LoginScreen(
 
             // 用户名输入框
                 TextField(
-                    value = username,
-                    onValueChange = { username = it },
+                    value = uiState.value.username,
+                    onValueChange = { uiState.value.username = it },
                     label = { Text("Username") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
@@ -107,16 +115,20 @@ fun LoginScreen(
 
             // 密码输入框
             TextField(
-                value = password,
-                onValueChange = { password = it },
+                value = uiState.value.password,
+                onValueChange = { uiState.value.password = it },
                 label = { Text("Password") },
                 modifier = Modifier.fillMaxWidth(),
+                isError = viewModel.validCredentials(),
                 colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Red,
+                    focusedIndicatorColor = Color.Red,  // 底部线条
                     unfocusedIndicatorColor = Color.Gray,
                     focusedLabelColor = Color.Red,
-                    cursorColor = Color.Red
+                    cursorColor = Color.Red,
+                    errorIndicatorColor = Color.Yellow,
+                    errorLabelColor = Color.Yellow
                 )
+
             )
 
             // 登录按钮

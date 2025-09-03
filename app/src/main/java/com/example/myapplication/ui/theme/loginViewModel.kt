@@ -25,8 +25,24 @@ class LoginViewModel : ViewModel() {
         _uiState.value.password = password
     }
 
-    fun validateCredentials(): Boolean {
-        // 简单的验证逻辑，可以根据需要进行扩展
-        return uiState.username == "admin" && uiState.password == "password"
+
+    fun validCredentials(): Boolean {
+        val validUsername = "admin"
+        val validPassword = "password123"
+        return _uiState.value.username == validUsername && _uiState.value.password == validPassword
     }
+
+    //if the credentials are not valid, pop up a dialog to inform the user
+
+
+
+    fun clearCredentials() {
+        _uiState.value = loginUiState()
+    }
+
+    fun isLoginButtonEnabled(): Boolean {
+        return _uiState.value.username.isNotBlank() && _uiState.value.password.isNotBlank()
+    }
+
+
 }
