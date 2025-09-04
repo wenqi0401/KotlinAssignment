@@ -8,16 +8,43 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun MyApp() {
     val navController = rememberNavController()
+    val menuManager = MilkTeaMenuManager()  // Create instance here
 
     NavHost(
         navController = navController,
-        startDestination = "login"  // 简化名称
+        startDestination = "login"
     ) {
         composable("login") {
             LoginScreen(navController = navController)
         }
-        composable("login_success") {  // ✅ 匹配导航中的名称
+        composable("login_success") {
             LoginSuccessScreen(navController = navController)
+        }
+        composable("menu_main") {
+            MenuMainScreen(
+                navController = navController,
+                menuManager = menuManager  // Pass the instance
+            )
+        }
+        composable("menu_category/{category}") { backStackEntry ->
+            val category = backStackEntry.arguments?.getString("category") ?: ""
+            MenuCategoryScreen(
+                navController = navController,
+                menuManager = menuManager,  // Pass the instance
+                category = category
+            )
+        }
+        composable("menu_full") {
+            MenuFullScreen(
+                navController = navController,
+                menuManager = menuManager  // Pass the instance
+            )
+        }
+        composable("menu_search") {
+            MenuSearchScreen(
+                navController = navController,
+                menuManager = menuManager  // Pass the instance
+            )
         }
     }
 }

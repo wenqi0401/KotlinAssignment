@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 
 
 data class loginUiState (
@@ -17,15 +18,21 @@ class LoginViewModel : ViewModel() {
     val uiState: StateFlow<loginUiState> = _uiState
 
 
+    // In your LoginViewModel class
     fun setUsername(username: String) {
-        _uiState.value.username = username
+        _uiState.update { it.copy(username = username) }
     }
 
     fun setPassword(password: String) {
-        _uiState.value.password = password
+        _uiState.update { it.copy(password = password) }
     }
 
-
+fun getUsername(): String {
+        return _uiState.value.username
+    }
+    fun getPassword(): String {
+        return _uiState.value.password
+    }
     fun validCredentials(): Boolean {
         val validUsername = "admin"
         val validPassword = "password123"
