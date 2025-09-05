@@ -8,7 +8,7 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun MyApp() {
     val navController = rememberNavController()
-    val menuManager = MilkTeaMenuManager()  // Create instance here
+    val menuManager = MilkTeaMenuManager()
 
     NavHost(
         navController = navController,
@@ -23,28 +23,23 @@ fun MyApp() {
         composable("menu_main") {
             MenuMainScreen(
                 navController = navController,
-                menuManager = menuManager  // Pass the instance
+                menuManager = menuManager
             )
         }
         composable("menu_category/{category}") { backStackEntry ->
             val category = backStackEntry.arguments?.getString("category") ?: ""
             MenuCategoryScreen(
                 navController = navController,
-                menuManager = menuManager,  // Pass the instance
+                menuManager = menuManager,
                 category = category
             )
         }
         composable("menu_full") {
             MenuFullScreen(
                 navController = navController,
-                menuManager = menuManager  // Pass the instance
+                menuManager = menuManager
             )
         }
-        composable("menu_search") {
-            MenuSearchScreen(
-                navController = navController,
-                menuManager = menuManager  // Pass the instance
-            )
-        }
+        // Removed the separate menu_search composable
     }
 }

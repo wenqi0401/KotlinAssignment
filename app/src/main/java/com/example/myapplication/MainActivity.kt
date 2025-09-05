@@ -63,28 +63,14 @@ import com.example.myapplication.ui.theme.LoginViewModel
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.data.AppDatabase
 import com.example.myapplication.ui.theme.data.LoginViewModelFactory
-import com.example.myapplication.ui.theme.data.User
 import com.example.myapplication.ui.theme.data.UserRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-
-
         setContent {
-            val db = AppDatabase.getDatabase(this)
-            val userDao = db.userDao()
-            GlobalScope.launch(Dispatchers.IO) {
-                if (userDao.getUserByUsername("admin") == null) {
-                    userDao.insert(User(username = "admin", password = "password123"))
-                }
-            }
             MyApplicationTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -96,7 +82,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 
 @Composable
 fun LoginScreen(
