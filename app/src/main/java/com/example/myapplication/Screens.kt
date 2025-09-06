@@ -60,12 +60,7 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Milk Tea Menu", color = Color.White) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
-                    }
-                },
+                title = { Text("Home Page", color = Color.White) },
                 colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Red
                 )
@@ -82,24 +77,21 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 .padding(16.dp)
         ) {
             Text(
-                text = "Welcome to Milk Tea Shop! 🍵",
+                text = "Welcome to MIXUE! 🍵",
                 fontSize = 24.sp,
                 color = Color.Red,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-
-            Text(
-                text = "Current time: 9:41",
-                fontSize = 16.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 24.dp)
+            Image(
+                painter = painterResource(id = R.drawable.homepage),
+                contentDescription = "Logo",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(bottom = 16.dp),
+                contentScale = ContentScale.Crop
             )
-
-            MenuOptionButton("Browse Categories", Icons.Default.ArrowForward) {
-                navController.navigate("menu_full")
-            }
-
-            MenuOptionButton("View Full Menu", Icons.Default.ArrowForward) {
+            MenuOptionButton("View Menu", Icons.Default.ArrowForward) {
                 navController.navigate("menu_full")
             }
 
@@ -331,11 +323,11 @@ fun CategoryChip(category: String, onClick: () -> Unit) {
         modifier = Modifier
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Red)
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
         Text(
             text = category,
-            color = Color.White,
+            color = Color.Red,
             fontSize = 14.sp,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
         )
