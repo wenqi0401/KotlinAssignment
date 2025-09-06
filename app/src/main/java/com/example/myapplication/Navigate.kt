@@ -59,5 +59,8 @@ fun MyApp() {
                 Text("Item not found")
             }
         }
+        composable("cart") {
+            CartScreen(navController = navController)
+        }
     }
 }

@@ -45,7 +45,7 @@ fun BottomNavigationBar(navController: NavHostController) {
             }
         })
         BottomNavItem(icon = Icons.Default.ShoppingCart, label = "Cart", onClick = {
-            navController.popBackStack()
+            navController.navigate("cart")
         })
         BottomNavItem(icon = Icons.Default.Create, label = "Order", onClick = {
             // Navigate to current order
