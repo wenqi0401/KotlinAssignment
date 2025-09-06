@@ -195,18 +195,6 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
             )
 
             // Menu Options
-            MenuOptionButton("View All Categories", Icons.Default.Search) {
-                navController.navigate("menu_full")
-            }
-
-            MenuOptionButton("Browse by Category", Icons.Default.ArrowForward) {
-                navController.navigate("menu_category/${menuManager.categories.first()}")
-            }
-
-            MenuOptionButton("Search Menu", Icons.Default.Search) {
-                navController.navigate("menu_search")
-            }
-
             MenuOptionButton("View Full Menu", Icons.Default.ArrowForward) {
                 navController.navigate("menu_full")
             }
@@ -321,10 +309,10 @@ fun MenuItemCard(item: MenuItem) {
                 modifier = Modifier.padding(vertical = 4.dp)
             )
             Text(
-                text = "$${item.price}",
+                text = "RM${item.price}",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Green
+                color = Color.Gray
             )
         }
     }
