@@ -60,7 +60,12 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Home Page", color = Color.White) },
+                title = { Text("Milk Tea Menu", color = Color.White) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    }
+                },
                 colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Red
                 )
@@ -77,21 +82,24 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 .padding(16.dp)
         ) {
             Text(
-                text = "Welcome to MIXUE! 🍵",
+                text = "Welcome to Milk Tea Shop! 🍵",
                 fontSize = 24.sp,
                 color = Color.Red,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-            Image(
-                painter = painterResource(id = R.drawable.homepage),
-                contentDescription = "Logo",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .padding(bottom = 16.dp),
-                contentScale = ContentScale.Crop
+
+            Text(
+                text = "Current time: 9:41",
+                fontSize = 16.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 24.dp)
             )
-            MenuOptionButton("View Menu", Icons.Default.ArrowForward) {
+
+            MenuOptionButton("Browse Categories", Icons.Default.ArrowForward) {
+                navController.navigate("menu_full")
+            }
+
+            MenuOptionButton("View Full Menu", Icons.Default.ArrowForward) {
                 navController.navigate("menu_full")
             }
 
@@ -234,7 +242,7 @@ fun MenuFullScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Category Navigation Row
+            // Category Navigation Row (no current category highlighted in full menu)
             CategoryNavigationRow(categories, navController)
 
             // Menu Content
@@ -295,7 +303,7 @@ fun MenuFullScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
 }
 
 @Composable
-fun CategoryNavigationRow(categories: List<String>, navController: NavHostController) {
+fun CategoryNavigationRow(categories: List<String>, navController: NavHostController, currentCategory: String? = null) {
     val scrollState = rememberScrollState()
 
     Row(
@@ -309,8 +317,14 @@ fun CategoryNavigationRow(categories: List<String>, navController: NavHostContro
         categories.forEach { category ->
             CategoryChip(
                 category = category,
+                isSelected = category == currentCategory,
                 onClick = {
-                    navController.navigate("menu_category/$category")
+                    navController.navigate("menu_category/$category") {
+                        // This prevents building up a large stack of category screens
+                        popUpTo("menu_category/{category}") {
+                            inclusive = false
+                        }
+                    }
                 }
             )
         }
@@ -318,16 +332,19 @@ fun CategoryNavigationRow(categories: List<String>, navController: NavHostContro
 }
 
 @Composable
-fun CategoryChip(category: String, onClick: () -> Unit) {
+fun CategoryChip(category: String, isSelected: Boolean = false, onClick: () -> Unit) {
+    val backgroundColor = if (isSelected) Color.Red else Color.LightGray
+    val textColor = if (isSelected) Color.White else Color.Black
+
     Card(
         modifier = Modifier
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Text(
             text = category,
-            color = Color.Red,
+            color = textColor,
             fontSize = 14.sp,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
         )
@@ -338,6 +355,7 @@ fun CategoryChip(category: String, onClick: () -> Unit) {
 @Composable
 fun CategoryDetailScreen(navController: NavHostController, menuManager: MilkTeaMenuManager, category: String) {
     val items = menuManager.getItemsByCategory(category)
+    val categories = menuManager.categories
 
     Scaffold(
         topBar = {
@@ -357,30 +375,28 @@ fun CategoryDetailScreen(navController: NavHostController, menuManager: MilkTeaM
             BottomNavigationBar(navController = navController)
         }
     ) { padding ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
         ) {
-            item {
-                Text(
-                    text = category,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Red,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-            }
+            // Add Category Navigation Row at the top
+            CategoryNavigationRow(categories, navController, currentCategory = category)
 
-            items(items) { item ->
-                MenuItemCard(item = item)
-                Spacer(modifier = Modifier.height(8.dp))
+            // Menu items for the selected category
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                items(items) { item ->
+                    MenuItemCard(item = item)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
         }
     }
 }
-
 @Composable
 fun BottomNavigationBar(navController: NavHostController) {
     Row(
