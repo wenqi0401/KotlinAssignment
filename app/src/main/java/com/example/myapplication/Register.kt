@@ -82,7 +82,7 @@ fun Register(
                     focusedLabelColor = Color.Red,
                     cursorColor = Color.Red
                 )
-            ))
+            )
 
             TextField(
                 value = uiState.value.password,

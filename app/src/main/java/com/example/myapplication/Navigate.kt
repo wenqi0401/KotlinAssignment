@@ -23,24 +23,29 @@ fun MyApp() {
         composable("menu_main") {
             MenuMainScreen(
                 navController = navController,
-                menuManager = menuManager
+                menuManager = menuManager  // Pass the instance
             )
         }
         composable("menu_category/{category}") { backStackEntry ->
             val category = backStackEntry.arguments?.getString("category") ?: ""
             MenuCategoryScreen(
                 navController = navController,
-                menuManager = menuManager,
+                menuManager = menuManager,  // Pass the instance
                 category = category
             )
         }
         composable("menu_full") {
             MenuFullScreen(
                 navController = navController,
-                menuManager = menuManager
+                menuManager = menuManager  // Pass the instance
             )
         }
-
+        composable("menu_search") {
+            MenuSearchScreen(
+                navController = navController,
+                menuManager = menuManager  // Pass the instance
+            )
+        }
         composable("register") {
             Register(navController = navController)
         }
