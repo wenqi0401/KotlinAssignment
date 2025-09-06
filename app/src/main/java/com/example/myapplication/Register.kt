@@ -113,7 +113,7 @@ fun Register(
             )
 
             Button(
-                onClick = { navController.navigate("menu_main") },
+                onClick = { navController.navigate("login") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White)
             ) {
