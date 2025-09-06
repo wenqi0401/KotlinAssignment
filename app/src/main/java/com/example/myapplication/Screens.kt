@@ -60,12 +60,7 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Milk Tea Menu", color = Color.White) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
-                    }
-                },
+                title = { Text("Home Page", color = Color.White) },
                 colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Red
                 )
@@ -82,23 +77,11 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 .padding(16.dp)
         ) {
             Text(
-                text = "Welcome to Milk Tea Shop! 🍵",
+                text = "Welcome to MIXUE! 🍵",
                 fontSize = 24.sp,
                 color = Color.Red,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-
-            Text(
-                text = "Current time: 9:41",
-                fontSize = 16.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
-
-            MenuOptionButton("Browse Categories", Icons.Default.ArrowForward) {
-                navController.navigate("menu_full")
-            }
-
             MenuOptionButton("View Full Menu", Icons.Default.ArrowForward) {
                 navController.navigate("menu_full")
             }
