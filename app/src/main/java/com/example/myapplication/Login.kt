@@ -127,9 +127,14 @@ fun LoginScreen(
                     onDismiss = { showErrorDialog = false }
                 )
             }
+
+            //why when i press this register button, it will exit the app?
+
+
             TextButton(
                 onClick = { navController.navigate("register") }
-            ) {
+            )
+            {
                 Text("Register", fontSize = 16.sp, color = Color.Gray)
             }
 
