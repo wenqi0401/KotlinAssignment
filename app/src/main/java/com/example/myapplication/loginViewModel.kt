@@ -1,14 +1,16 @@
-package com.example.myapplication.ui.theme
+package com.example.myapplication
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
-
+@Entity
 data class loginUiState (
+    @PrimaryKey(autoGenerate = true)
+    var id:Int=0,
     var username: String="",
     var password: String =""
     )

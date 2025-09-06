@@ -6,22 +6,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
@@ -33,7 +28,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -60,9 +54,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.ui.theme.LoginViewModel
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import com.example.myapplication.MyApp
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -71,12 +63,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    containerColor = Color.White
-                ) {
-                    MyApp()
-                }
+
+                MyApp()
             }
         }
     }
@@ -90,14 +78,11 @@ fun LoginScreen(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val uiState = viewModel.uiState.collectAsState()
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Red
+    ) { _ ->
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .background(Color.White),
-        contentAlignment = Alignment.Center
-    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -119,7 +104,7 @@ fun LoginScreen(
 
             TextField(
                 value = uiState.value.username,
-                onValueChange = {viewModel.setUsername(it) },
+                onValueChange = { viewModel.setUsername(it) },
                 label = { Text("Username") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
@@ -146,9 +131,9 @@ fun LoginScreen(
             Button(
                 onClick = { navController.navigate("menu_main") },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
             ) {
-                Text("Login", color = Color.White, fontSize = 20.sp)
+                Text("Login", color = Color.Red, fontSize = 20.sp)
             }
 
             TextButton(onClick = { /* TODO */ }) {
@@ -163,7 +148,6 @@ fun LoginScreen(
 }
 
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuManager) {
@@ -173,7 +157,11 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 title = { Text("Milk Tea Menu", color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
                     }
                 },
                 colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
@@ -233,7 +221,11 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
 }
 
 @Composable
-fun MenuOptionButton(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+fun MenuOptionButton(
+    text: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -263,7 +255,11 @@ fun MenuOptionButton(text: String, icon: androidx.compose.ui.graphics.vector.Ima
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MenuCategoryScreen(navController: NavHostController, menuManager: MilkTeaMenuManager, category: String) {
+fun MenuCategoryScreen(
+    navController: NavHostController,
+    menuManager: MilkTeaMenuManager,
+    category: String
+) {
     val items = menuManager.getItemsByCategory(category)
 
     Scaffold(
@@ -272,7 +268,11 @@ fun MenuCategoryScreen(navController: NavHostController, menuManager: MilkTeaMen
                 title = { Text(category, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
                     }
                 },
                 colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
@@ -337,7 +337,11 @@ fun MenuFullScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 title = { Text("Full Menu", color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
                     }
                 },
                 colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
@@ -389,7 +393,12 @@ fun MenuSearchScreen(navController: NavHostController, menuManager: MilkTeaMenuM
                     TextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { Text("Search menu...", color = Color.White.copy(alpha = 0.7f)) },
+                        placeholder = {
+                            Text(
+                                "Search menu...",
+                                color = Color.White.copy(alpha = 0.7f)
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
@@ -405,7 +414,11 @@ fun MenuSearchScreen(navController: NavHostController, menuManager: MilkTeaMenuM
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
                     }
                 },
                 colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
