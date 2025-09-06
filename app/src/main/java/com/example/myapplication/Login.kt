@@ -151,21 +151,18 @@ fun LoginScreen(
 @Composable
 fun LoginSuccessScreen(navController: NavHostController) {
     //delay with 1 second to navigate to menu_main
-<<<<<<< Updated upstream
      LaunchedEffect(Unit) {
          delay(1000)
          navController.navigate("menu_main") {
              popUpTo("menu_main") { inclusive = true }
          }
      }
-=======
     LaunchedEffect(Unit) {
         delay(1000)
         navController.navigate("menu_main") {
             popUpTo("menu_main") { inclusive = true }
         }
     }
->>>>>>> Stashed changes
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Red

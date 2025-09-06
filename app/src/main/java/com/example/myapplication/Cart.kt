@@ -22,7 +22,6 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-<<<<<<< Updated upstream
 fun CartScreen(navController: NavHostController) {
     Scaffold(
         topBar = {
@@ -90,14 +89,12 @@ fun CartScreen(navController: NavHostController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ItemDetailScreen(navController: NavHostController, item: MenuItem) {
-=======
 fun ItemDetailScreen(
     navController: NavHostController,
     item: MenuItem,
     snackbarHostState: SnackbarHostState
 ) {
->>>>>>> Stashed changes
+
     var quantity by remember { mutableStateOf(1) }
     var selectedSize by remember { mutableStateOf("Medium") }
     var selectedIceLevel by remember { mutableStateOf("Regular") }

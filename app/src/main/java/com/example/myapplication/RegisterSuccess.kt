@@ -32,17 +32,10 @@ fun RegisterSuccess(navController: NavHostController) {
     //delay for 2.5 seconds and navigate to login screen
     LaunchedEffect(Unit) {
 
-<<<<<<< Updated upstream
-    kotlinx.coroutines.delay(2500)}
-        navController.navigate("login") {
-            popUpTo("register_success") { inclusive = true }
-        }
-=======
         kotlinx.coroutines.delay(2500)}
     navController.navigate("login") {
         popUpTo("register_success") { inclusive = true }
     }
->>>>>>> Stashed changes
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Red

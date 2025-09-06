@@ -64,14 +64,11 @@ fun MyApp() {
             }
         }
         composable("cart") {
-<<<<<<< Updated upstream
             CartScreen(navController = navController)
-=======
             CartPage(navController = navController)
         }
         composable("paymentPage") {
             PaymentPage(navController = navController)
->>>>>>> Stashed changes
         }
     }
 }
