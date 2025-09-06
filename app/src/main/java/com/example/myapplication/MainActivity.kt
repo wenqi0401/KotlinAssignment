@@ -303,7 +303,7 @@ fun MenuItemCard(item: MenuItem) {
                 color = Color.Red
             )
             Text(
-                text = "$${item.price}",
+                text = "RM${item.price}",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Gray
