@@ -55,7 +55,7 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Milk Tea Menu", color = Color.White) },
+                title = { Text("Homepage", color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
@@ -77,17 +77,20 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 .padding(16.dp)
         ) {
             Text(
-                text = "Welcome to Milk Tea Shop! 🍵",
+                text = "Welcome to MIXUE! 🍵",
                 fontSize = 24.sp,
                 color = Color.Red,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            Text(
-                text = "Current time: 9:41",
-                fontSize = 16.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 24.dp)
+            Image(
+                painter = painterResource(id = R.drawable.mainpage),
+                contentDescription = "Logo",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(bottom = 16.dp),
+                contentScale = ContentScale.Crop
             )
 
             MenuOptionButton("View Full Menu", Icons.Default.ArrowForward) {
@@ -136,72 +139,6 @@ fun MenuOptionButton(text: String, icon: androidx.compose.ui.graphics.vector.Ima
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MenuCategoryScreen(navController: NavHostController, menuManager: MilkTeaMenuManager, category: String) {
-    val items = menuManager.getItemsByCategory(category)
-    val categories = menuManager.categories
-    val currentIndex = categories.indexOf(category)
-    val hasPrevious = currentIndex > 0
-    val hasNext = currentIndex < categories.size - 1
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(category, color = Color.White) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
-                    }
-                },
-                actions = {
-                    if (hasPrevious) {
-                        IconButton(
-                            onClick = {
-                                val prevCategory = categories[currentIndex - 1]
-                                navController.navigate("menu_category/$prevCategory") {
-                                    popUpTo("menu_category/$category") { inclusive = true }
-                                }
-                            }
-                        ) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Previous Category", tint = Color.White)
-                        }
-                    }
-                    if (hasNext) {
-                        IconButton(
-                            onClick = {
-                                val nextCategory = categories[currentIndex + 1]
-                                navController.navigate("menu_category/$nextCategory") {
-                                    popUpTo("menu_category/$category") { inclusive = true }
-                                }
-                            }
-                        ) {
-                            Icon(Icons.Default.ArrowForward, contentDescription = "Next Category", tint = Color.White)
-                        }
-                    }
-                },
-                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Red
-                )
-            )
-        },
-        bottomBar = {
-            BottomNavigationBar(navController = navController)
-        }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
-        ) {
-            items(items) { item ->
-                MenuItemCard(item = item)
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-    }
-}
 
 @Composable
 fun MenuItemCard(item: MenuItem) {
@@ -216,15 +153,14 @@ fun MenuItemCard(item: MenuItem) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Display the item image
-//            Image(
-//                painter = painterResource(id = item.imageResId),
-//                contentDescription = item.name,
-//                modifier = Modifier
-//                    .size(80.dp)
-//                    .padding(end = 16.dp),
-//                contentScale = ContentScale.Crop
-//            )
+            Image(
+                painter = painterResource(id = item.imageResId),
+                contentDescription = item.name,
+                modifier = Modifier
+                    .size(80.dp)
+                    .padding(end = 16.dp),
+                contentScale = ContentScale.Crop
+            )
 
             Column(
                 modifier = Modifier.weight(1f)
