@@ -82,7 +82,16 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 color = Color.Red,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-            MenuOptionButton("View Full Menu", Icons.Default.ArrowForward) {
+            Image(
+                painter = painterResource(id = R.drawable.homepage),
+                contentDescription = "Logo",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(bottom = 16.dp),
+                contentScale = ContentScale.Crop
+            )
+            MenuOptionButton("Menu", Icons.Default.ArrowForward) {
                 navController.navigate("menu_full")
             }
 
