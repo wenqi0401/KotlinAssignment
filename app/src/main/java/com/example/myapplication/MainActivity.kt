@@ -6,13 +6,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,7 +23,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -213,11 +219,7 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
 }
 
 @Composable
-fun MenuOptionButton(
-    text: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    onClick: () -> Unit
-) {
+fun MenuOptionButton(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -247,12 +249,12 @@ fun MenuOptionButton(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MenuCategoryScreen(
-    navController: NavHostController,
-    menuManager: MilkTeaMenuManager,
-    category: String
-) {
+fun MenuCategoryScreen(navController: NavHostController, menuManager: MilkTeaMenuManager, category: String) {
     val items = menuManager.getItemsByCategory(category)
+    val categories = menuManager.categories
+    val currentIndex = categories.indexOf(category)
+    val hasPrevious = currentIndex > 0
+    val hasNext = currentIndex < categories.size - 1
 
     Scaffold(
         topBar = {
@@ -260,17 +262,42 @@ fun MenuCategoryScreen(
                 title = { Text(category, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    }
+                },
+                actions = {
+                    if (hasPrevious) {
+                        IconButton(
+                            onClick = {
+                                val prevCategory = categories[currentIndex - 1]
+                                navController.navigate("menu_category/$prevCategory") {
+                                    popUpTo("menu_category/$category") { inclusive = true }
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Previous Category", tint = Color.White)
+                        }
+                    }
+                    if (hasNext) {
+                        IconButton(
+                            onClick = {
+                                val nextCategory = categories[currentIndex + 1]
+                                navController.navigate("menu_category/$nextCategory") {
+                                    popUpTo("menu_category/$category") { inclusive = true }
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Default.ArrowForward, contentDescription = "Next Category", tint = Color.White)
+                        }
                     }
                 },
                 colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Red
                 )
             )
+        },
+        bottomBar = {
+            BottomNavigationBar(navController = navController)
         }
     ) { padding ->
         LazyColumn(
@@ -281,6 +308,7 @@ fun MenuCategoryScreen(
         ) {
             items(items) { item ->
                 MenuItemCard(item = item)
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
@@ -303,12 +331,6 @@ fun MenuItemCard(item: MenuItem) {
                 color = Color.Red
             )
             Text(
-                text = item.description,
-                fontSize = 14.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
-            Text(
                 text = "RM${item.price}",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
@@ -321,57 +343,10 @@ fun MenuItemCard(item: MenuItem) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MenuFullScreen(navController: NavHostController, menuManager: MilkTeaMenuManager) {
-    val categories = menuManager.categories
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Full Menu", color = Color.White) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Red
-                )
-            )
-        }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
-        ) {
-            categories.forEach { category ->
-                item {
-                    Text(
-                        text = category,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Red,
-                        modifier = Modifier.padding(vertical = 16.dp)
-                    )
-                }
-                items(menuManager.getItemsByCategory(category)) { item ->
-                    MenuItemCard(item = item)
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MenuSearchScreen(navController: NavHostController, menuManager: MilkTeaMenuManager) {
     var searchQuery by remember { mutableStateOf("") }
+    val categories = menuManager.categories
     val searchResults = remember(searchQuery) {
-        if (searchQuery.length > 2) {
+        if (searchQuery.isNotEmpty()) {
             menuManager.searchMenu(searchQuery)
         } else {
             emptyList()
@@ -385,12 +360,7 @@ fun MenuSearchScreen(navController: NavHostController, menuManager: MilkTeaMenuM
                     TextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = {
-                            Text(
-                                "Search menu...",
-                                color = Color.White.copy(alpha = 0.7f)
-                            )
-                        },
+                        placeholder = { Text("Search menu...") },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
@@ -406,17 +376,16 @@ fun MenuSearchScreen(navController: NavHostController, menuManager: MilkTeaMenuM
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
                 colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Red
                 )
             )
+        },
+        bottomBar = {
+            BottomNavigationBar(navController = navController)
         }
     ) { padding ->
         LazyColumn(
@@ -425,30 +394,105 @@ fun MenuSearchScreen(navController: NavHostController, menuManager: MilkTeaMenuM
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            if (searchQuery.length <= 2) {
-                item {
-                    Text(
-                        text = "Type at least 3 characters to search",
-                        fontSize = 16.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-            } else if (searchResults.isEmpty()) {
-                item {
-                    Text(
-                        text = "No results found for '$searchQuery'",
-                        fontSize = 16.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(16.dp)
-                    )
+            if (searchQuery.isNotEmpty()) {
+                if (searchResults.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No results found for '$searchQuery'",
+                            fontSize = 16.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                } else {
+                    items(searchResults) { item ->
+                        MenuItemCard(item = item)
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             } else {
-                items(searchResults) { item ->
-                    MenuItemCard(item = item)
+                categories.forEach { category ->
+                    item {
+                        Text(
+                            text = category,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Red,
+                            modifier = Modifier
+                                .padding(vertical = 16.dp)
+                                .clickable {
+                                    navController.navigate("menu_category/$category")
+                                }
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .background(Color.LightGray)
+                                .padding(bottom = 8.dp)
+                        )
+                    }
+
+                    items(menuManager.getItemsByCategory(category)) { item ->
+                        MenuItemCard(item = item)
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun BottomNavigationBar(navController: NavHostController) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.Red)
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        BottomNavItem(icon = Icons.Default.Home, label = "Home", onClick = {
+            navController.navigate("menu_main")
+        })
+        BottomNavItem(icon = Icons.Default.Search, label = "Menu", onClick = {
+            navController.navigate("menu_full")
+        })
+        BottomNavItem(icon = Icons.Default.ArrowBack, label = "Last", onClick = {
+            // Navigate to order history
+        })
+        BottomNavItem(icon = Icons.Default.ShoppingCart, label = "Order", onClick = {
+            // Navigate to current order
+        })
+        BottomNavItem(icon = Icons.Default.Person, label = "Profile", onClick = {
+            // Navigate to profile
+        })
+    }
+}
+
+@Composable
+fun BottomNavItem(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = Color.White,
+            modifier = Modifier.size(24.dp)
+        )
+        Text(
+            text = label,
+            color = Color.White,
+            fontSize = 12.sp
+        )
     }
 }
 
