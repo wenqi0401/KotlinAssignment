@@ -7,17 +7,7 @@ class UserRepository(private val userDao: UserDao) {
         userDao.insertUser(user)
     }
 
-    suspend fun getAllUsers(): List<loginUiState> {
-        return userDao.getAllUsers()
-    }
-
-    suspend fun validateUser(username: String, password: String): Boolean {
-        val user = userDao.getUserByCredentials(username, password)
-        return user != null
-    }
-
-    suspend fun isUsernameExists(username: String): Boolean {
-        val user = userDao.getUserByUsername(username)
-        return user != null
+    suspend fun getUserByCredentials(username: String, password: String): loginUiState? {
+        return userDao.getUserByUsernameAndPassword(username, password)
     }
 }

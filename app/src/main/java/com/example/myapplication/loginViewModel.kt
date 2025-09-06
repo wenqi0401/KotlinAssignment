@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
-@Entity
+@Entity(tableName = "users")
 data class loginUiState (
     @PrimaryKey(autoGenerate = true)
     var id:Int=0,
