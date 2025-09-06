@@ -201,7 +201,7 @@ fun MenuFullScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                     TextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { Text("Search item...") },
+                        placeholder = { Text("Search menu...") },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
