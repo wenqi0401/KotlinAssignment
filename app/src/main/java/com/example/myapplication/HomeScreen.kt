@@ -322,4 +322,8 @@ fun MenuOptionButton(text: String, icon: androidx.compose.ui.graphics.vector.Ima
             )
         }
     }
+<<<<<<< Updated upstream
 }
+=======
+}
+>>>>>>> Stashed changes
