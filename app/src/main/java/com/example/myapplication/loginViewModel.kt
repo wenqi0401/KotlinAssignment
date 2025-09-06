@@ -56,7 +56,7 @@ fun getUsername(): String {
 
 
 
-    // Add other functions that confirmpassword match in register screen
+    // Add other functions that confirm password match in register screen
     fun passwordsMatch(confirmPassword: String): Boolean {
         return _uiState.value.password == confirmPassword
     }

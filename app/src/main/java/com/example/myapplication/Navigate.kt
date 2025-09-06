@@ -41,7 +41,13 @@ fun MyApp() {
                 menuManager = menuManager
             )
         }
-        composable("item_detail/{itemName}") { backStackEntry ->
+        composable("register") {
+            Register(navController = navController)
+        }
+        composable("register_success") {
+            RegisterSuccess(navController = navController)
+        }
+         composable("item_detail/{itemName}") { backStackEntry ->
             val itemName = backStackEntry.arguments?.getString("itemName") ?: ""
             val item = menuManager.getItemByName(itemName)
             if (item != null) {
@@ -50,7 +56,6 @@ fun MyApp() {
                     item = item
                 )
             } else {
-                // Handle error case
                 Text("Item not found")
             }
         }

@@ -1,9 +1,7 @@
 package com.example.myapplication
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -47,6 +46,7 @@ fun LoginScreen(
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var showErrorDialog by remember { mutableStateOf(false) }
     val uiState = viewModel.uiState.collectAsState()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -104,13 +104,37 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White)
             ) {
+                Text("Menu", color = Color.Red, fontSize = 30.sp)
+            }
+
+            Button(
+                onClick = {
+                    if (viewModel.validCredentials()) {
+                        navController.navigate("login_success")
+                        viewModel.clearCredentials()
+                    } else {
+                        showErrorDialog = true // Set state instead of calling composable
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+            ) {
                 Text("Login", color = Color.Red, fontSize = 30.sp)
             }
+            // Show dialog based on state
+            if (showErrorDialog) {
+                LoginErrorDialog(
+                    onDismiss = { showErrorDialog = false }
+                )
+            }
+
+            //why when i press this register button, it will exit the app?
 
 
             TextButton(
                 onClick = { navController.navigate("register") }
-            ) {
+            )
+            {
                 Text("Register", fontSize = 16.sp, color = Color.Gray)
             }
 
@@ -167,6 +191,20 @@ fun LoginSuccessScreen(navController: NavHostController) {
 fun LoginSuccessPreview() {
     MyApplicationTheme {
         val navController = rememberNavController()
-        LoginSuccessScreen(navController = navController)
+        LoginScreen(navController = navController)
     }
+}
+
+@Composable
+fun LoginErrorDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Login Failed") },
+        text = { Text("Invalid username or password. Please try again.") },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("OK")
+            }
+        }
+    )
 }
