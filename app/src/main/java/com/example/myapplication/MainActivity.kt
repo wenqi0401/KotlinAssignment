@@ -195,7 +195,7 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
             )
 
             // Menu Options
-            MenuOptionButton("View Full Menu", Icons.Default.ArrowForward) {
+            MenuOptionButton("Menu", Icons.Default.ArrowForward) {
                 navController.navigate("menu_full")
             }
 
