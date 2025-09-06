@@ -81,9 +81,10 @@ fun LoginScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Red
-    ) { _ ->
+    ) { paddingValues ->
 
         Column(
+            modifier = Modifier.padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -99,7 +100,7 @@ fun LoginScreen(
                 fontStyle = FontStyle.Italic,
                 fontFamily = FontFamily.Serif,
                 fontSize = 40.sp,
-                color = Color.Red
+                color = Color.White
             )
 
             TextField(
@@ -133,10 +134,13 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White)
             ) {
-                Text("Login", color = Color.Red, fontSize = 20.sp)
+                Text("Login", color = Color.Red, fontSize = 30.sp)
             }
 
-            TextButton(onClick = { /* TODO */ }) {
+
+            TextButton(
+                onClick = { navController.navigate("register") }
+            ) {
                 Text("Register", fontSize = 16.sp, color = Color.Gray)
             }
 

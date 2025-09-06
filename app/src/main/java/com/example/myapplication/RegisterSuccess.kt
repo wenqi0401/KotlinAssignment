@@ -24,20 +24,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.ui.theme.MyApplicationTheme
-
 
 @Composable
-fun LoginSuccessScreen(navController: NavHostController) {
+fun RegisterSuccess(navController: NavHostController) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Red
     ) { paddingValues ->
 
+
         Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize(),
+            modifier = Modifier.padding(paddingValues).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -49,7 +46,7 @@ fun LoginSuccessScreen(navController: NavHostController) {
             )
             // 标题
             Text(
-                text = "Login Successful!",
+                text = "Register Successful!",
                 fontStyle = FontStyle.Italic,
                 fontFamily = FontFamily.SansSerif,
                 fontSize = 40.sp,
@@ -62,16 +59,14 @@ fun LoginSuccessScreen(navController: NavHostController) {
                 modifier = Modifier.size(100.dp),
                 tint = Color.White
             )
-        }
 
+
+        }
     }
 }
-
 @Preview(showBackground = true)
 @Composable
-fun LoginSuccessPreview() {
-    MyApplicationTheme {
-        val navController = rememberNavController()
-        LoginSuccessScreen(navController = navController)
-    }
+fun RegisterSuccessPreview() {
+    RegisterSuccess(navController = rememberNavController())
+
 }

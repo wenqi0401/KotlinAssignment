@@ -46,5 +46,13 @@ fun MyApp() {
                 menuManager = menuManager  // Pass the instance
             )
         }
+        composable("register") {
+            Register(navController = navController)
+        }
+
+        composable("register_success") {
+            RegisterSuccess(navController = navController)
+        }
+
     }
 }

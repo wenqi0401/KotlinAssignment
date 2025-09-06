@@ -13,6 +13,7 @@ data class loginUiState (
     var id:Int=0,
     var username: String="",
     var password: String =""
+    //confirmPassword: String =""
     )
 
 class LoginViewModel : ViewModel() {
@@ -53,5 +54,14 @@ fun getUsername(): String {
         return _uiState.value.username.isNotBlank() && _uiState.value.password.isNotBlank()
     }
 
+
+
+    // Add other functions that confirmpassword match in register screen
+    fun passwordsMatch(confirmPassword: String): Boolean {
+        return _uiState.value.password == confirmPassword
+    }
+
+    // if register is successful and passwords match, store data in database
+    // use Room database to store data
 
 }
