@@ -3,6 +3,7 @@ package com.example.myapplication
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,10 +16,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -55,7 +60,7 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Homepage", color = Color.White) },
+                title = { Text("Milk Tea Menu", color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
@@ -77,21 +82,22 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 .padding(16.dp)
         ) {
             Text(
-                text = "Welcome to MIXUE! 🍵",
+                text = "Welcome to Milk Tea Shop! 🍵",
                 fontSize = 24.sp,
                 color = Color.Red,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            Image(
-                painter = painterResource(id = R.drawable.mainpage),
-                contentDescription = "Logo",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .padding(bottom = 16.dp),
-                contentScale = ContentScale.Crop
+            Text(
+                text = "Current time: 9:41",
+                fontSize = 16.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 24.dp)
             )
+
+            MenuOptionButton("Browse Categories", Icons.Default.ArrowForward) {
+                navController.navigate("menu_full")
+            }
 
             MenuOptionButton("View Full Menu", Icons.Default.ArrowForward) {
                 navController.navigate("menu_full")
@@ -172,7 +178,7 @@ fun MenuItemCard(item: MenuItem) {
                     color = Color.Red
                 )
                 Text(
-                    text = "RM${item.price}",
+                    text = "RM${"%.2f".format(item.price)}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Gray,
@@ -231,61 +237,153 @@ fun MenuFullScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
             BottomNavigationBar(navController = navController)
         }
     ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            // Category Navigation Row
+            CategoryNavigationRow(categories, navController)
+
+            // Menu Content
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                if (searchQuery.isNotEmpty()) {
+                    if (searchResults.isEmpty()) {
+                        item {
+                            Text(
+                                text = "No results found for '$searchQuery'",
+                                fontSize = 16.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    } else {
+                        items(searchResults) { item ->
+                            MenuItemCard(item = item)
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                } else {
+                    categories.forEach { category ->
+                        item {
+                            Text(
+                                text = category,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Red,
+                                modifier = Modifier.padding(vertical = 16.dp)
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                                    .background(Color.LightGray)
+                                    .padding(bottom = 8.dp)
+                            )
+                        }
+
+                        items(menuManager.getItemsByCategory(category)) { item ->
+                            MenuItemCard(item = item)
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CategoryNavigationRow(categories: List<String>, navController: NavHostController) {
+    val scrollState = rememberScrollState()
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.LightGray.copy(alpha = 0.2f))
+            .horizontalScroll(scrollState)
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        categories.forEach { category ->
+            CategoryChip(
+                category = category,
+                onClick = {
+                    navController.navigate("menu_category/$category")
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun CategoryChip(category: String, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Red)
+    ) {
+        Text(
+            text = category,
+            color = Color.White,
+            fontSize = 14.sp,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CategoryDetailScreen(navController: NavHostController, menuManager: MilkTeaMenuManager, category: String) {
+    val items = menuManager.getItemsByCategory(category)
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(category, color = Color.White) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    }
+                },
+                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Red
+                )
+            )
+        },
+        bottomBar = {
+            BottomNavigationBar(navController = navController)
+        }
+    ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            if (searchQuery.isNotEmpty()) {
-                if (searchResults.isEmpty()) {
-                    item {
-                        Text(
-                            text = "No results found for '$searchQuery'",
-                            fontSize = 16.sp,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
-                } else {
-                    items(searchResults) { item ->
-                        MenuItemCard(item = item)
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                }
-            } else {
-                categories.forEach { category ->
-                    item {
-                        Text(
-                            text = category,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Red,
-                            modifier = Modifier
-                                .padding(vertical = 16.dp)
-                                .clickable {
-                                    navController.navigate("menu_category/$category")
-                                }
-                        )
+            item {
+                Text(
+                    text = category,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Red,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(1.dp)
-                                .background(Color.LightGray)
-                                .padding(bottom = 8.dp)
-                        )
-                    }
-
-                    items(menuManager.getItemsByCategory(category)) { item ->
-                        MenuItemCard(item = item)
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                }
+            items(items) { item ->
+                MenuItemCard(item = item)
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
@@ -306,15 +404,15 @@ fun BottomNavigationBar(navController: NavHostController) {
                 popUpTo("menu_main") { inclusive = true }
             }
         })
-        BottomNavItem(icon = Icons.Default.Search, label = "Menu", onClick = {
+        BottomNavItem(icon = Icons.Default.Menu, label = "Menu", onClick = {
             navController.navigate("menu_full") {
                 popUpTo("menu_full") { inclusive = true }
             }
         })
-        BottomNavItem(icon = Icons.Default.ArrowBack, label = "Last", onClick = {
+        BottomNavItem(icon = Icons.Default.ShoppingCart, label = "Cart", onClick = {
             navController.popBackStack()
         })
-        BottomNavItem(icon = Icons.Default.ShoppingCart, label = "Order", onClick = {
+        BottomNavItem(icon = Icons.Default.Create, label = "Order", onClick = {
             // Navigate to current order
         })
         BottomNavItem(icon = Icons.Default.Person, label = "Profile", onClick = {

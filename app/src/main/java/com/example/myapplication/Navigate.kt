@@ -26,6 +26,14 @@ fun MyApp() {
                 menuManager = menuManager
             )
         }
+        composable("menu_category/{category}") { backStackEntry ->
+            val category = backStackEntry.arguments?.getString("category") ?: ""
+            CategoryDetailScreen(
+                navController = navController,
+                menuManager = menuManager,
+                category = category
+            )
+        }
         composable("menu_full") {
             MenuFullScreen(
                 navController = navController,
