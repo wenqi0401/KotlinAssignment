@@ -12,6 +12,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,6 +28,14 @@ import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun RegisterSuccess(navController: NavHostController) {
+
+    //delay for 2.5 seconds and navigate to login screen
+    LaunchedEffect(Unit) {
+
+    kotlinx.coroutines.delay(2500)}
+        navController.navigate("login") {
+            popUpTo("register_success") { inclusive = true }
+        }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Red

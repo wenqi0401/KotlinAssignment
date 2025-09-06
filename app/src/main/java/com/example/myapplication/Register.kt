@@ -43,6 +43,7 @@ fun Register(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
+    var showErrorDialog by remember { mutableStateOf(false) }
     val uiState = viewModel.uiState.collectAsState()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -113,11 +114,28 @@ fun Register(
             )
 
             Button(
-                onClick = { navController.navigate("login") },
+                onClick = {
+                    // Check if passwords match
+                    if (viewModel.passwordsMatch(confirmPassword)) {
+                        // Store user data in database here if needed
+                        navController.navigate("register_success") {
+                            popUpTo("register") { inclusive = true }
+                        }
+                    } else {
+                        // Show error message or dialog
+                        showErrorDialog = true
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White)
             ) {
                 Text("Register", color = Color.Red, fontSize = 30.sp)
+            }
+            // Show dialog based on state
+            if (showErrorDialog) {
+                RegisterErrorDialog(
+                    onDismiss = { showErrorDialog = false }
+                )
             }
 
         }
@@ -128,4 +146,18 @@ fun Register(
 fun RegisterPreview() {
     val navController = rememberNavController()
     Register(navController = navController)
+}
+
+@Composable
+fun RegisterErrorDialog(onDismiss: () -> Unit) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Error") },
+        text = { Text("Passwords do not match. Please try again.") },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("OK")
+            }
+        }
+    )
 }

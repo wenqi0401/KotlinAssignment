@@ -19,6 +19,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +39,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import kotlinx.coroutines.delay
 
 @Composable
 fun LoginScreen(
@@ -148,6 +150,13 @@ fun LoginScreen(
 
 @Composable
 fun LoginSuccessScreen(navController: NavHostController) {
+    //delay with 1 second to navigate to menu_main
+     LaunchedEffect(Unit) {
+         delay(1000)
+         navController.navigate("menu_main") {
+             popUpTo("menu_main") { inclusive = true }
+         }
+     }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Red
