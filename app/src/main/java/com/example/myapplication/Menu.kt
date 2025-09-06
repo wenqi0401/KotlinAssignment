@@ -58,21 +58,22 @@ class MilkTeaMenuManager {
         MenuItem("Ice Cream Toffee Hazelnut Latte", "Coffee",  5.0, R.drawable.ice_cream_toffee_hazelnut_latte),
     )
 
-    // Get all menu items
     fun getAllMenuItems(): List<MenuItem> {
         return menuItems
     }
 
-    // Get items by specific category
     fun getItemsByCategory(category: String): List<MenuItem> {
         return menuItems.filter { it.category == category }
     }
-
-    // Search menu items
+ 
     fun searchMenu(query: String): List<MenuItem> {
         return menuItems.filter {
             it.name.contains(query, ignoreCase = true) ||
                     it.category.contains(query, ignoreCase = true)
         }
+    }
+
+    fun getItemByName(name: String): MenuItem? {
+        return menuItems.find { it.name == name }
     }
 }
