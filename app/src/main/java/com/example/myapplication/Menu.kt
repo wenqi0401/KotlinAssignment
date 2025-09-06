@@ -75,4 +75,7 @@ class MilkTeaMenuManager {
                     it.category.contains(query, ignoreCase = true)
         }
     }
+    fun getItemByName(name: String): MenuItem? {
+        return menuItems.find { it.name == name }
+    }
 }

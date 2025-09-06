@@ -139,11 +139,12 @@ fun MenuOptionButton(text: String, icon: androidx.compose.ui.graphics.vector.Ima
 
 
 @Composable
-fun MenuItemCard(item: MenuItem) {
+fun MenuItemCard(item: MenuItem, onItemClick: (MenuItem) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable { onItemClick(item) },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -151,6 +152,7 @@ fun MenuItemCard(item: MenuItem) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Display the item image
             Image(
                 painter = painterResource(id = item.imageResId),
                 contentDescription = item.name,
@@ -170,7 +172,7 @@ fun MenuItemCard(item: MenuItem) {
                     color = Color.Red
                 )
                 Text(
-                    text = "RM${"%.2f".format(item.price)}",
+                    text = "RM ${"%.2f".format(item.price)}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Gray,
@@ -255,7 +257,9 @@ fun MenuFullScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                         }
                     } else {
                         items(searchResults) { item ->
-                            MenuItemCard(item = item)
+                            MenuItemCard(item = item) { clickedItem ->
+                                navController.navigate("item_detail/${clickedItem.name}")
+                            }
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
@@ -280,7 +284,9 @@ fun MenuFullScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                         }
 
                         items(menuManager.getItemsByCategory(category)) { item ->
-                            MenuItemCard(item = item)
+                            MenuItemCard(item = item) { clickedItem ->
+                                navController.navigate("item_detail/${clickedItem.name}")
+                            }
                             Spacer(modifier = Modifier.height(8.dp))
                         }
 
@@ -382,7 +388,9 @@ fun CategoryDetailScreen(navController: NavHostController, menuManager: MilkTeaM
                     .padding(16.dp)
             ) {
                 items(items) { item ->
-                    MenuItemCard(item = item)
+                    MenuItemCard(item = item) { clickedItem ->
+                        navController.navigate("item_detail/${clickedItem.name}")
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }

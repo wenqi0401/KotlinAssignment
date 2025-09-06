@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -39,6 +40,19 @@ fun MyApp() {
                 navController = navController,
                 menuManager = menuManager
             )
+        }
+        composable("item_detail/{itemName}") { backStackEntry ->
+            val itemName = backStackEntry.arguments?.getString("itemName") ?: ""
+            val item = menuManager.getItemByName(itemName)
+            if (item != null) {
+                ItemDetailScreen(
+                    navController = navController,
+                    item = item
+                )
+            } else {
+                // Handle error case
+                Text("Item not found")
+            }
         }
     }
 }
