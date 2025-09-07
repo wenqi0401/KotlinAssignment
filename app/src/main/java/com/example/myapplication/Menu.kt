@@ -8,7 +8,6 @@ data class MenuItem(
     val imageResId: Int = R.drawable.placeholder
 )
 
-
 // Main menu manager class
 class MilkTeaMenuManager {
     // Categories

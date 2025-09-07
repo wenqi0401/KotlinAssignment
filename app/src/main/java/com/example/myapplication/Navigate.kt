@@ -21,6 +21,7 @@ fun MyApp() {
     val menuManager = remember { MilkTeaMenuManager() }
     val snackbarHostState = remember { SnackbarHostState() }
 
+
     val currentRoute = remember { mutableStateOf("login") }
     LaunchedEffect(navController) {
         navController.addOnDestinationChangedListener { _, destination, _ ->
@@ -85,6 +86,20 @@ fun MyApp() {
             composable("paymentPage") {
                 PaymentPage(navController = navController)
             }
+
+            composable("trackOrder/{orderId}/{address}/{phone}") { backStackEntry ->
+                val orderId = backStackEntry.arguments?.getString("orderId") ?: "MX-0000"
+                val address = backStackEntry.arguments?.getString("address") ?: "Unknown Address"
+                val phone = backStackEntry.arguments?.getString("phone") ?: "Unknown Phone"
+
+                TrackOrderScreen(
+                    navController = navController,
+                    orderId = orderId,
+                    address = address,
+                    phone = phone
+                )
+            }
+
             composable("menu_full") {
                 MenuFullScreen(navController = navController, menuManager = menuManager)
             }

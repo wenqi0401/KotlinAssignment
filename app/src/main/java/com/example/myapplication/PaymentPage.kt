@@ -37,6 +37,7 @@ fun PaymentPage(navController: NavHostController) {
     val voucher = 0.00
     val total = subtotal + deliveryFee + tax - voucher
 
+
     // State variables for user inputs
     var address by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
@@ -87,7 +88,13 @@ fun PaymentPage(navController: NavHostController) {
         },
         bottomBar = {
             Button(
-                onClick = { showOrderSuccess = true },
+                onClick = {
+                    val orderId = "MX-" + (1000..9999).random()  // 自动生成订单号
+                    CartManager.clearAll()
+                    navController.navigate("trackOrder/$orderId/$address/$phoneNumber") {
+                        popUpTo("menu_main") { inclusive = false }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -103,6 +110,7 @@ fun PaymentPage(navController: NavHostController) {
                 )
             }
         }
+
     ) { padding ->
         LazyColumn(
             modifier = Modifier
