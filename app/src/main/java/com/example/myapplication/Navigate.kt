@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.LanguageScreen
 
 @Composable
 fun MyApp() {
@@ -97,6 +98,9 @@ fun MyApp() {
             }
             composable("profile") {
                 ProfileScreen(navController = navController)
+            }
+            composable("language") {
+                LanguageScreen(navController = navController)
             }
         }
     }

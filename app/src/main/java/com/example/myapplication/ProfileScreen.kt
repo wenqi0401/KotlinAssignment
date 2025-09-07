@@ -111,7 +111,7 @@ fun ProfileScreen(navController: NavHostController) {
                 )
                 ProfileOptionItem(
                     title = "Language",
-                    onClick = { /* Handle Language click */ }
+                    onClick = { navController.navigate("language") }
                 )
                 ProfileOptionItem(
                     title = "Help Center",
