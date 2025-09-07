@@ -134,9 +134,7 @@ fun MenuFullScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 )
             )
         },
-        bottomBar = {
-            BottomNavigationBar(navController = navController)
-        }
+
     ) { padding ->
         Column(
             modifier = Modifier
@@ -224,8 +222,7 @@ fun CategoryNavigationRow(categories: List<String>, navController: NavHostContro
                 category = category,
                 isSelected = category == currentCategory,
                 onClick = {
-                    navController.navigate("menu_category/$category") {
-                        // This prevents building up a large stack of category screens
+                    navController.navigate("menu_category/${category}") {
                         popUpTo("menu_category/{category}") {
                             inclusive = false
                         }
@@ -276,9 +273,7 @@ fun CategoryDetailScreen(navController: NavHostController, menuManager: MilkTeaM
                 )
             )
         },
-        bottomBar = {
-            BottomNavigationBar(navController = navController)
-        }
+
     ) { padding ->
         Column(
             modifier = Modifier

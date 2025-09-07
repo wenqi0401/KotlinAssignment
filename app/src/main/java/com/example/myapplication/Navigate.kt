@@ -1,9 +1,15 @@
 package com.example.myapplication
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -11,54 +17,84 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun MyApp() {
     val navController = rememberNavController()
-    val menuManager = remember {MilkTeaMenuManager()}
+    val menuManager = remember { MilkTeaMenuManager() }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    NavHost(
-        navController = navController,
-        startDestination = "login"
-    ) {
-        composable("login") {
-            LoginScreen(navController = navController)
+    val currentRoute = remember { mutableStateOf("login") }
+    LaunchedEffect(navController) {
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            currentRoute.value = destination.route ?: "login"
         }
-        composable("login_success") {
-            LoginSuccessScreen(navController = navController)
-        }
-        composable("menu_main") {
-            MenuMainScreen(
-                navController = navController,
-                menuManager = menuManager
-            )
-        }
-
-        composable("register") {
-            Register(navController = navController)
-        }
-        composable("register_success") {
-            RegisterSuccess(navController = navController)
-        }
-        composable("item_detail/{itemName}") { backStackEntry ->
-            val itemName = backStackEntry.arguments?.getString("itemName") ?: ""
-            val item = menuManager.getItemByName(itemName)
-            if (item != null) {
-                ItemDetailScreen(
-                    navController = navController,
-                    item = item,
-                    snackbarHostState = snackbarHostState
+    }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color.White,
+        bottomBar = {
+            if (currentRoute.value !in listOf(
+                    "login",
+                    "register",
+                    "register_success",
+                    "login_success"
                 )
-            } else {
-                Text("Item not found")
+            ) {
+                BottomNavigationBar(navController = navController)
             }
         }
-        composable("cart") {
-            CartPage(navController = navController)
-        }
-        composable("paymentPage") {
-            PaymentPage(navController = navController)
-        }
-
-        composable("menu_full") {
-            MenuFullScreen(navController = navController, menuManager = menuManager)
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "login",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            // Add this missing login composable
+            composable("login") {
+                LoginScreen(navController = navController)
+            }
+            composable("login_success") {
+                LoginSuccessScreen(navController = navController)
+            }
+            composable("menu_main") {
+                MenuMainScreen(
+                    navController = navController,
+                    menuManager = menuManager
+                )
+            }
+            composable("register") {
+                Register(navController = navController)
+            }
+            composable("register_success") {
+                RegisterSuccess(navController = navController)
+            }
+            composable("item_detail/{itemName}") { backStackEntry ->
+                val itemName = backStackEntry.arguments?.getString("itemName") ?: ""
+                val item = menuManager.getItemByName(itemName)
+                if (item != null) {
+                    ItemDetailScreen(
+                        navController = navController,
+                        item = item,
+                        snackbarHostState = snackbarHostState
+                    )
+                } else {
+                    // Handle error, maybe show a message or navigate back
+                }
+            }
+            composable("cart") {
+                CartPage(navController = navController)
+            }
+            composable("paymentPage") {
+                PaymentPage(navController = navController)
+            }
+            composable("menu_full") {
+                MenuFullScreen(navController = navController, menuManager = menuManager)
+            }
+            composable("menu_category/{category}") { backStackEntry ->
+                val category = backStackEntry.arguments?.getString("category") ?: ""
+                CategoryDetailScreen(
+                    navController = navController,
+                    menuManager = menuManager,
+                    category = category
+                )
+            }
         }
     }
 }
