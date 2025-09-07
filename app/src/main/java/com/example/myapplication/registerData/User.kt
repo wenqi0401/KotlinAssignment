@@ -3,11 +3,20 @@ package com.example.myapplication.registerData
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+// This is for DATABASE - separate from UI state
 @Entity(tableName = "users")
-data class loginUiState (
+data class User(
     @PrimaryKey(autoGenerate = true)
-    var id:Int=0,
-    var username: String="",
-    var password: String =""
-    //confirmPassword: String =""
+    val id: Int = 0,
+    val username: String,
+    val password: String
+)
+
+// This is for UI STATE - keep separate from database
+data class loginUiState(
+    val username: String = "",
+    val password: String = "",
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+    val isLoggedIn: Boolean = false
 )

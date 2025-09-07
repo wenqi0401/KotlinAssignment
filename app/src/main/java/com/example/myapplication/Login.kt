@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -44,12 +45,24 @@ import kotlinx.coroutines.delay
 @Composable
 fun LoginScreen(
     navController: NavHostController,
-    viewModel: LoginViewModel = viewModel()
+    viewModel: AuthViewModel = viewModel()  // Use AuthViewModel instead of LoginViewModel
 ) {
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
     var showErrorDialog by remember { mutableStateOf(false) }
     val uiState = viewModel.uiState.collectAsState()
+
+    // Handle successful login
+    LaunchedEffect(uiState.value.isLoggedIn) {
+        if (uiState.value.isLoggedIn) {
+            navController.navigate("login_success")
+            viewModel.clearCredentials()
+        }
+    }
+
+    // Show error dialog when there's an error message
+    LaunchedEffect(uiState.value.errorMessage) {
+        showErrorDialog = uiState.value.errorMessage != null
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Red
@@ -80,6 +93,7 @@ fun LoginScreen(
                 onValueChange = { viewModel.setUsername(it) },
                 label = { Text("Username") },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.value.isLoading,
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Red,
                     unfocusedIndicatorColor = Color.Gray,
@@ -90,9 +104,10 @@ fun LoginScreen(
 
             TextField(
                 value = uiState.value.password,
-                onValueChange = { viewModel.setPassword(it) }, // Use ViewModel method
+                onValueChange = { viewModel.setPassword(it) },
                 label = { Text("Password") },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.value.isLoading,
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Red,
                     unfocusedIndicatorColor = Color.Gray,
@@ -110,30 +125,37 @@ fun LoginScreen(
             }
 
             Button(
-                onClick = {
-                    if (viewModel.validCredentials()) {
-                        navController.navigate("login_success")
-                        viewModel.clearCredentials()
-                    } else {
-                        showErrorDialog = true // Set state instead of calling composable
-                    }
-                },
+                onClick = { viewModel.loginUser() }, // Use database login
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.value.isLoading &&
+                        uiState.value.username.isNotBlank() &&
+                        uiState.value.password.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White)
             ) {
-                Text("Login", color = Color.Red, fontSize = 30.sp)
+                if (uiState.value.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = Color.Red
+                    )
+                } else {
+                    Text("Login", color = Color.Red, fontSize = 30.sp)
+                }
             }
-            // Show dialog based on state
+
+            // Show error dialog
             if (showErrorDialog) {
                 LoginErrorDialog(
-                    onDismiss = { showErrorDialog = false }
+                    message = uiState.value.errorMessage ?: "Login failed",
+                    onDismiss = {
+                        showErrorDialog = false
+                        viewModel.clearErrorMessage()
+                    }
                 )
             }
 
             TextButton(
                 onClick = { navController.navigate("register") }
-            )
-            {
+            ) {
                 Text("Register", fontSize = 16.sp, color = Color.Gray)
             }
 
@@ -143,7 +165,6 @@ fun LoginScreen(
         }
     }
 }
-
 
 @Composable
 fun LoginSuccessScreen(navController: NavHostController) {
@@ -208,11 +229,11 @@ fun LoginSuccessPreview() {
 }
 
 @Composable
-fun LoginErrorDialog(onDismiss: () -> Unit) {
+fun LoginErrorDialog(message: String, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Login Failed") },
-        text = { Text("Invalid username or password. Please try again.") },
+        text = { Text(message) },
         confirmButton = {
             Button(onClick = onDismiss) {
                 Text("OK")
