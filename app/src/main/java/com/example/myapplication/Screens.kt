@@ -51,7 +51,7 @@ fun BottomNavigationBar(navController: NavHostController) {
             // Navigate to current order
         })
         BottomNavItem(icon = Icons.Default.Person, label = "Profile", onClick = {
-            // Navigate to profile
+            navController.navigate("profile")
         })
     }
 }

@@ -75,7 +75,7 @@ fun MyApp() {
                         snackbarHostState = snackbarHostState
                     )
                 } else {
-                    // Handle error, maybe show a message or navigate back
+
                 }
             }
             composable("cart") {
@@ -94,6 +94,9 @@ fun MyApp() {
                     menuManager = menuManager,
                     category = category
                 )
+            }
+            composable("profile") {
+                ProfileScreen(navController = navController)
             }
         }
     }
