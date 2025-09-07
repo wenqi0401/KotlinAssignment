@@ -130,9 +130,6 @@ fun LoginScreen(
                 )
             }
 
-            //why when i press this register button, it will exit the app?
-
-
             TextButton(
                 onClick = { navController.navigate("register") }
             )

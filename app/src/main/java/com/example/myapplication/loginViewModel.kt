@@ -3,18 +3,12 @@ package com.example.myapplication
 import androidx.lifecycle.ViewModel
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.myapplication.registerData.loginUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
-@Entity(tableName = "users")
-data class loginUiState (
-    @PrimaryKey(autoGenerate = true)
-    var id:Int=0,
-    var username: String="",
-    var password: String =""
-    //confirmPassword: String =""
-    )
+
 
 class LoginViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(loginUiState())
