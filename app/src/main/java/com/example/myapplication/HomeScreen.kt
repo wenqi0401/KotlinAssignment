@@ -56,10 +56,8 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                     containerColor = Color.Red
                 )
             )
-        },
-        bottomBar = {
-            BottomNavigationBar(navController = navController)
         }
+
     ) { padding ->
         Column(
             modifier = Modifier

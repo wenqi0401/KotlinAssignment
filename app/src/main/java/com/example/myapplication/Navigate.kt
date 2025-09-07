@@ -11,7 +11,7 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun MyApp() {
     val navController = rememberNavController()
-    val menuManager = MilkTeaMenuManager()
+    val menuManager = remember {MilkTeaMenuManager()}
     val snackbarHostState = remember { SnackbarHostState() }
 
     NavHost(
@@ -30,20 +30,7 @@ fun MyApp() {
                 menuManager = menuManager
             )
         }
-//        composable("menu_category/{category}") { backStackEntry ->
-//            val category = backStackEntry.arguments?.getString("category") ?: ""
-//            CategoryDetailScreen(
-//                navController = navController,
-//                menuManager = menuManager,
-//                category = category
-//            )
-//        }
-//        composable("menu_full") {
-//            MenuFullScreen(
-//                navController = navController,
-//                menuManager = menuManager
-//            )
-//        }
+
         composable("register") {
             Register(navController = navController)
         }
@@ -64,11 +51,14 @@ fun MyApp() {
             }
         }
         composable("cart") {
-            CartScreen(navController = navController)
             CartPage(navController = navController)
         }
         composable("paymentPage") {
             PaymentPage(navController = navController)
+        }
+
+        composable("menu_full") {
+            MenuFullScreen(navController = navController, menuManager = menuManager)
         }
     }
 }
