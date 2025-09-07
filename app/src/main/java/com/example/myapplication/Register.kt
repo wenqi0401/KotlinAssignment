@@ -7,11 +7,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -28,6 +31,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,17 +44,27 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun Register(
     navController: NavHostController,
-    viewModel: AuthViewModel = viewModel()  // Use AuthViewModel instead of LoginViewModel
+    viewModel: AuthViewModel = viewModel()
 ) {
     var confirmPassword by remember { mutableStateOf("") }
     var showErrorDialog by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
+    var registrationAttempted by remember { mutableStateOf(false) }
 
     val uiState = viewModel.uiState.collectAsState()
 
-    // Show error dialog when there's an error message
-    LaunchedEffect(uiState.value.errorMessage) {
-        showErrorDialog = uiState.value.errorMessage != null
+    // Handle registration result - ONLY show dialogs, no navigation here
+    LaunchedEffect(uiState.value.errorMessage, uiState.value.isLoading, registrationAttempted) {
+        if (registrationAttempted && !uiState.value.isLoading) {
+            if (uiState.value.errorMessage != null) {
+                // Show error dialog if there's an error
+                showErrorDialog = true
+            } else {
+                // Show success dialog - DON'T navigate yet
+                showSuccessDialog = true
+            }
+            registrationAttempted = false
+        }
     }
 
     Scaffold(
@@ -76,40 +92,63 @@ fun Register(
                 color = Color.White
             )
 
+            // Phone Number Field
             TextField(
-                value = uiState.value.username,
-                onValueChange = { viewModel.setUsername(it) },
-                label = { Text("Create a Username") },
+                value = uiState.value.phoneNumber,
+                onValueChange = { viewModel.setPhoneNumber(it) },
+                label = { Text("Phone Number") },
+                placeholder = { Text("e.g., 0123456789") },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.value.isLoading,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Red,
                     unfocusedIndicatorColor = Color.Gray,
                     focusedLabelColor = Color.Red,
                     cursorColor = Color.Red
-                )
+                ),
+                supportingText = {
+                    Text(
+                        text = "10-15 digits, numbers only",
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 12.sp
+                    )
+                }
             )
 
+            // Password Field
             TextField(
                 value = uiState.value.password,
                 onValueChange = { viewModel.setPassword(it) },
                 label = { Text("Create a Password") },
+                placeholder = { Text("Min 8 chars, letters & numbers") },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.value.isLoading,
+                visualTransformation = PasswordVisualTransformation(),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Red,
                     unfocusedIndicatorColor = Color.Gray,
                     focusedLabelColor = Color.Red,
                     cursorColor = Color.Red
-                )
+                ),
+                supportingText = {
+                    Text(
+                        text = "At least 8 characters, must contain letters and numbers",
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 12.sp
+                    )
+                }
             )
 
+            // Confirm Password Field
             TextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
                 label = { Text("Confirm Password") },
+                placeholder = { Text("Re-enter your password") },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.value.isLoading,
+                visualTransformation = PasswordVisualTransformation(),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Red,
                     unfocusedIndicatorColor = Color.Gray,
@@ -118,21 +157,22 @@ fun Register(
                 )
             )
 
+            // Register Button
             Button(
                 onClick = {
-                    if (viewModel.passwordsMatch(confirmPassword)) {
-                        viewModel.registerUser() // Register in database
-                        showSuccessDialog = true
-                    } else {
+                    val confirmPasswordError = viewModel.validateConfirmPassword(confirmPassword)
+                    if (confirmPasswordError != null) {
                         showErrorDialog = true
+                    } else {
+                        registrationAttempted = true
+                        viewModel.registerUser()
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.value.isLoading &&
-                        uiState.value.username.isNotBlank() &&
-                        uiState.value.password.isNotBlank() &&
-                        confirmPassword.isNotBlank(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                enabled = !uiState.value.isLoading && viewModel.isRegisterFormValid(confirmPassword),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (!uiState.value.isLoading && viewModel.isRegisterFormValid(confirmPassword)) Color.White else Color.Gray
+                )
             ) {
                 if (uiState.value.isLoading) {
                     CircularProgressIndicator(
@@ -147,7 +187,7 @@ fun Register(
             // Error dialog
             if (showErrorDialog) {
                 RegisterErrorDialog(
-                    message = uiState.value.errorMessage ?: "Passwords do not match",
+                    message = uiState.value.errorMessage ?: viewModel.validateConfirmPassword(confirmPassword) ?: "Registration failed",
                     onDismiss = {
                         showErrorDialog = false
                         viewModel.clearErrorMessage()
@@ -155,17 +195,26 @@ fun Register(
                 )
             }
 
-            // Success dialog
-            if (showSuccessDialog && uiState.value.errorMessage == null && !uiState.value.isLoading) {
+            // Success dialog - Navigation happens ONLY when user clicks OK
+            if (showSuccessDialog) {
                 RegisterSuccessDialog(
                     onDismiss = {
                         showSuccessDialog = false
+                        viewModel.clearErrorMessage()
                         viewModel.clearCredentials()
+                        // Navigation happens HERE when user clicks OK
                         navController.navigate("login") {
                             popUpTo("register") { inclusive = true }
                         }
                     }
                 )
+            }
+
+            // Back to Login Button
+            TextButton(
+                onClick = { navController.navigateUp() }
+            ) {
+                Text("Already have account? Login", fontSize = 16.sp, color = Color.Gray)
             }
         }
     }
@@ -178,32 +227,60 @@ fun RegisterPreview() {
     Register(navController = navController)
 }
 
-// Update RegisterErrorDialog
 @Composable
 fun RegisterErrorDialog(message: String, onDismiss: () -> Unit) {
-    androidx.compose.material3.AlertDialog(
+    AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Registration Error") },
-        text = { Text(message) },
+        title = {
+            Text(
+                "Registration Error",
+                color = Color.Red,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Text(
+                message,
+                fontSize = 14.sp
+            )
+        },
         confirmButton = {
-            Button(onClick = onDismiss) {
-                Text("OK")
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+            ) {
+                Text("OK", color = Color.White)
             }
-        }
+        },
+        containerColor = Color.White
     )
 }
 
-// Add RegisterSuccessDialog
 @Composable
 fun RegisterSuccessDialog(onDismiss: () -> Unit) {
-    androidx.compose.material3.AlertDialog(
+    AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Registration Successful") },
-        text = { Text("Account created successfully! You can now login.") },
+        title = {
+            Text(
+                "Registration Successful!",
+                color = Color.Green,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Text(
+                "Account created successfully! You can now login with your phone number.",
+                fontSize = 14.sp
+            )
+        },
         confirmButton = {
-            Button(onClick = onDismiss) {
-                Text("OK")
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF17AA00))
+            ) {
+                Text("Go to Login", color = Color.White)
             }
-        }
+        },
+        containerColor = Color.White
     )
 }

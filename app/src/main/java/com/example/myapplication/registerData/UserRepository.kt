@@ -6,11 +6,11 @@ class UserRepository(private val userDao: UserDao) {
         userDao.insertUser(user)
     }
 
-    suspend fun getUserByCredentials(username: String, password: String): User? {
-        return userDao.getUserByUsernameAndPassword(username, password)
+    suspend fun getUserByCredentials(phoneNumber: String, password: String): User? {
+        return userDao.getUserByUsernameAndPassword(phoneNumber, password)
     }
 
-    suspend fun checkIfUserExists(username: String): User? {
-        return userDao.getUserByUsername(username)
+    suspend fun checkIfUserExists(phoneNumber: String): User? {
+        return userDao.getUserByUsername(phoneNumber)
     }
 }

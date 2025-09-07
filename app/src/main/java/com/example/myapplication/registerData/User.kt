@@ -8,13 +8,13 @@ import androidx.room.PrimaryKey
 data class User(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val username: String,
+    val phoneNumber: String,
     val password: String
 )
 
 // This is for UI STATE - keep separate from database
 data class loginUiState(
-    val username: String = "",
+    val phoneNumber: String,
     val password: String = "",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,

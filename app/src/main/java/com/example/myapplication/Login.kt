@@ -58,6 +58,7 @@ fun LoginScreen(
         }
     }
 
+
     // Show error dialog when there's an error message
     LaunchedEffect(uiState.value.errorMessage) {
         showErrorDialog = uiState.value.errorMessage != null
@@ -89,9 +90,10 @@ fun LoginScreen(
             )
 
             TextField(
-                value = uiState.value.username,
-                onValueChange = { viewModel.setUsername(it) },
-                label = { Text("Username") },
+                value = uiState.value.phoneNumber,
+                onValueChange = { viewModel.setPhoneNumber(it) },
+                label = { Text("Phone Number") },
+                placeholder = {Text("e.g. 012345678901")},
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.value.isLoading,
                 colors = TextFieldDefaults.colors(
@@ -106,6 +108,7 @@ fun LoginScreen(
                 value = uiState.value.password,
                 onValueChange = { viewModel.setPassword(it) },
                 label = { Text("Password") },
+                placeholder = {Text("At least 8 chars, letters & numbers")},
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.value.isLoading,
                 colors = TextFieldDefaults.colors(
@@ -127,10 +130,18 @@ fun LoginScreen(
             Button(
                 onClick = { viewModel.loginUser() }, // Use database login
                 modifier = Modifier.fillMaxWidth(),
+                // Enable button only when not loading and fields are not empty(optional)
                 enabled = !uiState.value.isLoading &&
-                        uiState.value.username.isNotBlank() &&
+                        uiState.value.phoneNumber.isNotBlank() &&
                         uiState.value.password.isNotBlank(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                //set enabled button color to white and disabled to gray
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (!uiState.value.isLoading &&
+                        uiState.value.phoneNumber.isNotBlank() &&
+                        uiState.value.password.isNotBlank()
+                    ) Color.White else Color.Gray
+                )
+
             ) {
                 if (uiState.value.isLoading) {
                     CircularProgressIndicator(
@@ -171,9 +182,8 @@ fun LoginSuccessScreen(navController: NavHostController) {
     //delay with 1 second to navigate to menu_main
      LaunchedEffect(Unit) {
          delay(1000)
-         navController.navigate("menu_main") {
-             popUpTo("menu_main") { inclusive = true }
-         }
+         //no need pop up to login_success
+            navController.navigate("menu_main")
      }
     LaunchedEffect(Unit) {
         delay(1000)
