@@ -66,7 +66,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                             isLoading = false,
                             isLoggedIn = true,
                             errorMessage = null,
-                            currentUser = user
+                            currentUser = user // This ensures the current user is set properly
                         )
                     }
                 } else {
@@ -146,21 +146,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Profile Management Functions
+// AuthViewModel.kt (simplified update functions)
     fun updateUserName(newName: String) {
         viewModelScope.launch {
             val currentUser = _uiState.value.currentUser
             if (currentUser != null) {
-                try {
-                    repository.updateUserName(currentUser.id, newName)
-                    val updatedUser = currentUser.copy(name = newName)
-                    _uiState.update {
-                        it.copy(currentUser = updatedUser)
-                    }
-                } catch (e: Exception) {
-                    _uiState.update {
-                        it.copy(errorMessage = "Failed to update name: ${e.message}")
-                    }
-                }
+                val updatedUser = currentUser.copy(name = newName)
+                repository.updateUser(updatedUser)
+                _uiState.update { it.copy(currentUser = updatedUser) }
             }
         }
     }
@@ -169,17 +162,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val currentUser = _uiState.value.currentUser
             if (currentUser != null) {
-                try {
-                    repository.updateUserGender(currentUser.id, newGender)
-                    val updatedUser = currentUser.copy(gender = newGender)
-                    _uiState.update {
-                        it.copy(currentUser = updatedUser)
-                    }
-                } catch (e: Exception) {
-                    _uiState.update {
-                        it.copy(errorMessage = "Failed to update gender: ${e.message}")
-                    }
-                }
+                val updatedUser = currentUser.copy(gender = newGender)
+                repository.updateUser(updatedUser)
+                _uiState.update { it.copy(currentUser = updatedUser) }
             }
         }
     }
@@ -188,17 +173,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val currentUser = _uiState.value.currentUser
             if (currentUser != null) {
-                try {
-                    repository.updateUserProfilePicture(currentUser.id, profilePicturePath)
-                    val updatedUser = currentUser.copy(profilePicturePath = profilePicturePath)
-                    _uiState.update {
-                        it.copy(currentUser = updatedUser)
-                    }
-                } catch (e: Exception) {
-                    _uiState.update {
-                        it.copy(errorMessage = "Failed to update profile picture: ${e.message}")
-                    }
-                }
+                val updatedUser = currentUser.copy(profilePicturePath = profilePicturePath)
+                repository.updateUser(updatedUser)
+                _uiState.update { it.copy(currentUser = updatedUser) }
             }
         }
     }
@@ -211,7 +188,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     val refreshedUser = repository.getUserById(currentUser.id)
                     if (refreshedUser != null) {
                         _uiState.update {
-                            it.copy(currentUser = refreshedUser)
+                            it.copy(
+                                currentUser = refreshedUser,
+                                errorMessage = null
+                            )
                         }
                     }
                 } catch (e: Exception) {

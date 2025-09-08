@@ -33,6 +33,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,14 +51,13 @@ fun LoginScreen(
     var showErrorDialog by remember { mutableStateOf(false) }
     val uiState = viewModel.uiState.collectAsState()
 
-    // Handle successful login
+    // Handle successful login - Don't clear credentials immediately
     LaunchedEffect(uiState.value.isLoggedIn) {
         if (uiState.value.isLoggedIn) {
             navController.navigate("login_success")
-            viewModel.clearCredentials()
+            // Don't clear credentials here - let them persist for the session
         }
     }
-
 
     // Show error dialog when there's an error message
     LaunchedEffect(uiState.value.errorMessage) {
@@ -109,6 +109,7 @@ fun LoginScreen(
                 onValueChange = { viewModel.setPassword(it) },
                 label = { Text("Password") },
                 placeholder = {Text("At least 8 chars, letters & numbers")},
+                visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.value.isLoading,
                 colors = TextFieldDefaults.colors(
@@ -180,11 +181,11 @@ fun LoginScreen(
 @Composable
 fun LoginSuccessScreen(navController: NavHostController) {
     //delay with 1 second to navigate to menu_main
-     LaunchedEffect(Unit) {
-         delay(1000)
-         //no need pop up to login_success
-            navController.navigate("menu_main")
-     }
+    LaunchedEffect(Unit) {
+        delay(1000)
+        //no need pop up to login_success
+        navController.navigate("menu_main")
+    }
     LaunchedEffect(Unit) {
         delay(1000)
         navController.navigate("menu_main") {
