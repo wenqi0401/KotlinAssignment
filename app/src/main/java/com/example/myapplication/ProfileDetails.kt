@@ -1,5 +1,9 @@
 package com.example.myapplication
 
+import android.app.Activity
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,55 +21,101 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 
 @OptIn(ExperimentalMaterial3Api::class)
-
 @Composable
 fun UserProfileScreen(
-    navController: NavHostController? = null,
+    navController: NavHostController,
     authViewModel: AuthViewModel = viewModel()
 ) {
     val uiState by authViewModel.uiState.collectAsState()
+    var showNameDialog by remember { mutableStateOf(false) }
+    var showGenderDialog by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
-    // Default values based on your requirements
-    val userName = "User" // You can customize this or get from user input later
-    val phoneNumber = uiState.phoneNumber.ifEmpty { "No phone number" }
-    val gender = "Male" // Default as requested
+    // Refresh user data when screen loads
+    LaunchedEffect(Unit) {
+        authViewModel.refreshUserData()
+    }
+
+    // Show error dialog when there's an error message
+    LaunchedEffect(uiState.errorMessage) {
+        showErrorDialog = uiState.errorMessage != null
+    }
+
+    // Gallery launcher for profile picture
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                // In a real app, you'd save this to internal storage
+                // For now, we'll just store the URI as string
+                authViewModel.updateProfilePicture(uri.toString())
+            }
+        }
+    }
+
+    val currentUser = uiState.currentUser
+    val userName = currentUser?.name ?: "User"
+    val phoneNumber = currentUser?.phoneNumber ?: "No phone number"
+    val gender = currentUser?.gender ?: "Male"
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("My Profile", color = Color.White) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Red),
                 modifier = Modifier.shadow(4.dp)
             )
         },
-        containerColor = Color(0xFF1E1E1E) // Dark background
+        containerColor = Color(0xFF1E1E1E)
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -85,7 +135,12 @@ fun UserProfileScreen(
             ) {
                 ProfileRowWithIcon(
                     label = "Profile Picture",
-                    onClick = { /* TODO: Add profile picture change functionality */ }
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                            type = "image/*"
+                        }
+                        galleryLauncher.launch(intent)
+                    }
                 )
             }
 
@@ -104,23 +159,58 @@ fun UserProfileScreen(
                     ProfileRow(
                         label = "Name",
                         value = userName,
-                        onClick = { /* TODO: Add name edit functionality */ },
+                        onClick = { showNameDialog = true },
                         isFirst = true
                     )
                     ProfileRow(
                         label = "Phone Number",
                         value = phoneNumber,
-                        onClick = { /* TODO: Add phone edit functionality */ }
+                        onClick = { /* Phone number cannot be edited */ }
                     )
                     ProfileRow(
                         label = "Gender",
                         value = gender,
-                        onClick = { /* TODO: Add gender edit functionality */ },
+                        onClick = { showGenderDialog = true },
                         isLast = true
                     )
                 }
             }
         }
+    }
+
+    // Name Edit Dialog
+    if (showNameDialog) {
+        EditNameDialog(
+            currentName = userName,
+            onDismiss = { showNameDialog = false },
+            onConfirm = { newName ->
+                authViewModel.updateUserName(newName)
+                showNameDialog = false
+            }
+        )
+    }
+
+    // Gender Selection Dialog
+    if (showGenderDialog) {
+        GenderSelectionDialog(
+            currentGender = gender,
+            onDismiss = { showGenderDialog = false },
+            onGenderSelected = { selectedGender ->
+                authViewModel.updateUserGender(selectedGender)
+                showGenderDialog = false
+            }
+        )
+    }
+
+    // Error Dialog
+    if (showErrorDialog) {
+        ErrorDialog(
+            message = uiState.errorMessage ?: "An error occurred",
+            onDismiss = {
+                showErrorDialog = false
+                authViewModel.clearErrorMessage()
+            }
+        )
     }
 }
 
@@ -159,16 +249,17 @@ private fun ProfileRow(
                     fontWeight = FontWeight.Medium
                 )
                 Spacer(modifier = Modifier.width(12.dp))
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "Edit $label",
-                    tint = Color.White.copy(alpha = 0.8f),
-                    modifier = Modifier.size(22.dp)
-                )
+                if (label != "Phone Number") { // Don't show arrow for phone number (not editable)
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "Edit $label",
+                        tint = Color.White.copy(alpha = 0.8f),
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
         }
 
-        // Add divider if not last item
         if (!isLast) {
             Box(
                 modifier = Modifier
@@ -205,7 +296,6 @@ private fun ProfileRowWithIcon(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Profile Picture Icon
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -238,7 +328,6 @@ private fun ProfileRowWithIcon(
             }
         }
 
-        // Add divider
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -249,9 +338,108 @@ private fun ProfileRowWithIcon(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun UserProfileScreenPreview() {
+fun EditNameDialog(
+    currentName: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var name by remember { mutableStateOf(currentName) }
 
-    UserProfileScreen()
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Name") },
+        text = {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Name") },
+                singleLine = true
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (name.isNotBlank()) {
+                        onConfirm(name.trim())
+                    }
+                },
+                enabled = name.isNotBlank()
+            ) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun GenderSelectionDialog(
+    currentGender: String,
+    onDismiss: () -> Unit,
+    onGenderSelected: (String) -> Unit
+) {
+    var selectedGender by remember { mutableStateOf(currentGender) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Select Gender") },
+        text = {
+            Column {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    RadioButton(
+                        selected = selectedGender == "Male",
+                        onClick = { selectedGender = "Male" }
+                    )
+                    Text("Male", modifier = Modifier.padding(start = 8.dp))
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    RadioButton(
+                        selected = selectedGender == "Female",
+                        onClick = { selectedGender = "Female" }
+                    )
+                    Text("Female", modifier = Modifier.padding(start = 8.dp))
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onGenderSelected(selectedGender) }
+            ) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun ErrorDialog(
+    message: String,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Error") },
+        text = { Text(message) },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("OK")
+            }
+        }
+    )
 }

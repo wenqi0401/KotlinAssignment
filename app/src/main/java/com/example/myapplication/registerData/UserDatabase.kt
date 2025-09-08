@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [User::class],
-    version = 3,  // Increment to version 3
+    version = 4,  // Increment to version 4 for new schema
     exportSchema = false
 )
 abstract class UserDatabase : RoomDatabase() {
@@ -22,9 +22,9 @@ abstract class UserDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     UserDatabase::class.java,
-                    "mixue_user_database_v3"  // Change database name to force new creation
+                    "mixue_user_database_v4"  // New database name for version 4
                 )
-                    .fallbackToDestructiveMigration() // This recreates database if schema changes
+                    .fallbackToDestructiveMigration() // Recreates database if schema changes
                     .build()
                 INSTANCE = instance
                 instance
