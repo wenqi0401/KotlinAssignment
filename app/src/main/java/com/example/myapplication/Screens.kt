@@ -48,7 +48,7 @@ fun BottomNavigationBar(navController: NavHostController) {
             navController.navigate("cart")
         })
         BottomNavItem(icon = Icons.Default.Create, label = "Order", onClick = {
-            // Navigate to current order
+            navController.navigate("order_history")
         })
         BottomNavItem(icon = Icons.Default.Person, label = "Profile", onClick = {
             navController.navigate("profile")

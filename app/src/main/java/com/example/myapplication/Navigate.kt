@@ -55,6 +55,8 @@ fun MyApp() {
             composable("login_success") {
                 LoginSuccessScreen(navController = navController)
             }
+
+            // Main App screen
             composable("menu_main") {
                 MenuMainScreen(
                     navController = navController,
@@ -98,6 +100,10 @@ fun MyApp() {
                     address = address,
                     phone = phone
                 )
+            }
+
+            composable("order_history") {
+                OrderHistoryScreen(navController = navController)
             }
 
             composable("menu_full") {

@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.R.attr.phoneNumber
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,10 +27,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.myapplication.orderData.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaymentPage(navController: NavHostController) {
+    val context = LocalContext.current
+    val orderManager = remember { OrderManager(context) }
+    val coroutineScope = rememberCoroutineScope()
+
     val cartItems = CartManager.getItems()
     val subtotal = CartManager.calculateTotal()
     val deliveryFee = 4.73
@@ -36,7 +44,6 @@ fun PaymentPage(navController: NavHostController) {
     val tax = subtotal * taxRate
     val voucher = 0.00
     val total = subtotal + deliveryFee + tax - voucher
-
 
     // State variables for user inputs
     var address by remember { mutableStateOf("") }
@@ -89,10 +96,53 @@ fun PaymentPage(navController: NavHostController) {
         bottomBar = {
             Button(
                 onClick = {
-                    val orderId = "MX-" + (1000..9999).random()  // 自动生成订单号
-                    CartManager.clearAll()
-                    navController.navigate("trackOrder/$orderId/$address/$phoneNumber") {
-                        popUpTo("menu_main") { inclusive = false }
+                    val orderId = "MX-" + (1000..9999).random()
+
+                    val currentUserPhone = UserSession.getCurrentUser() ?: phoneNumber
+                    if (UserSession.getCurrentUser() == null && phoneNumber.isNotEmpty()) {
+                        UserSession.setCurrentUser(phoneNumber)
+                    }
+
+                    // Convert cart items to order items
+                    val orderItems = cartItems.map { cartItem ->
+                        OrderItem(
+                            name = cartItem.item.name,
+                            price = cartItem.item.price,
+                            quantity = cartItem.quantity,
+                            imageResId = cartItem.item.imageResId
+                        )
+                    }
+
+                    val order = Order(
+                        orderId = orderId,
+                        userPhoneNumber = currentUserPhone,
+                        items = orderItems,
+                        subtotal = subtotal,
+                        deliveryFee = deliveryFee,
+                        tax = tax,
+                        voucher = voucher,
+                        total = total,
+                        deliveryAddress = address,
+                        phoneNumber = phoneNumber,
+                        comment = comment,
+                        paymentMethod = selectedPaymentMethod,
+                        cardNumber = if (selectedPaymentMethod == "visa") cardNumber else null
+                    )
+
+                    // Save order to database
+                    coroutineScope.launch {
+                        try {
+                            orderManager.saveOrder(order)
+                            Log.d("PaymentPage", "Order saved with userPhone: ${order.userPhoneNumber}")
+                            CartManager.clearAll()
+                            navController.navigate("trackOrder/$orderId/$address/$phoneNumber") {
+                                popUpTo("menu_main") { inclusive = false }
+                            }
+                        } catch (e: Exception) {
+                            // Handle error - maybe show a snackbar
+                            Log.e("PaymentPage", "Error saving order", e)
+                            e.printStackTrace()
+                        }
                     }
                 },
                 modifier = Modifier
@@ -179,6 +229,7 @@ fun PaymentPage(navController: NavHostController) {
     }
 }
 
+// Keep all other existing @Composable functions as they are
 @Composable
 fun DeliveryInfoSection() {
     Card(
@@ -273,7 +324,6 @@ fun AddressSection(
     }
 }
 
-
 @Composable
 fun CommentSection(
     comment: String,
@@ -362,8 +412,6 @@ fun PaymentMethodSection(
             isSelected = selectedMethod == "ewallet",
             onClick = { onMethodChange("ewallet") }
         )
-
-
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -549,7 +597,6 @@ fun PriceRow(label: String, amount: Double) {
         )
     }
 }
-
 
 @Composable
 fun OrderSuccessScreen() {
