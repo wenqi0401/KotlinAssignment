@@ -48,6 +48,8 @@ android {
 }
 
 dependencies {
+    // Image Loading
+    implementation("io.coil-kt:coil-compose:2.4.0")
     // AndroidX
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
