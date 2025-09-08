@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,9 +45,15 @@ import androidx.navigation.NavHostController
 @Composable
 fun ProfileScreen(
     navController: NavHostController,
-    viewModel : AuthViewModel = viewModel ()
+    viewModel: AuthViewModel = viewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState()
+    val currentUser = uiState.value.currentUser
+
+    // Refresh user data when screen loads
+    LaunchedEffect(Unit) {
+        viewModel.refreshUserData()
+    }
 
     Scaffold(
         topBar = {
@@ -85,10 +92,9 @@ fun ProfileScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Hi ${uiState.value.phoneNumber}",
+                        text = "Hi ${currentUser?.name ?: "User"}",
                         color = Color.Black,
                         fontSize = 25.sp,
-
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Image(
@@ -111,8 +117,7 @@ fun ProfileScreen(
             ) {
                 ProfileOptionItem(
                     title = "My Profile",
-
-                    onClick = { /* Handle My Profile click */ }
+                    onClick = { navController.navigate("user_profile") }
                 )
                 ProfileOptionItem(
                     title = "Language",
@@ -132,6 +137,7 @@ fun ProfileScreen(
                     .fillMaxWidth()
                     .padding(16.dp)
                     .clickable {
+                        viewModel.logout()
                         navController.navigate("login") {
                             popUpTo(navController.graph.startDestinationId) {
                                 inclusive = true
@@ -188,11 +194,10 @@ fun ProfileOptionItem(title: String, onClick: () -> Unit) {
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun ProfileScreenPreview() {
-
     val navController = androidx.navigation.compose.rememberNavController()
     ProfileScreen(navController = navController)
-
 }

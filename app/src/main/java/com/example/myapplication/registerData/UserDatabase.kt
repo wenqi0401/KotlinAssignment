@@ -4,18 +4,14 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.myapplication.orderData.Order
-import com.example.myapplication.orderData.OrderDao
-
 
 @Database(
-    entities = [User::class, Order::class],
-    version = 4,
+    entities = [User::class],
+    version = 3,  // Increment to version 3
     exportSchema = false
 )
 abstract class UserDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
-    abstract fun orderDao(): OrderDao
 
     companion object {
         @Volatile
@@ -26,7 +22,7 @@ abstract class UserDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     UserDatabase::class.java,
-                    "mixue_user_database_v4"  // Change database name to force new creation
+                    "mixue_user_database_v3"  // Change database name to force new creation
                 )
                     .fallbackToDestructiveMigration() // This recreates database if schema changes
                     .build()

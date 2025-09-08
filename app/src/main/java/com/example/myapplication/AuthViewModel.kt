@@ -23,13 +23,13 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             password = "",
             isLoading = false,
             errorMessage = null,
-            isLoggedIn = false
+            isLoggedIn = false,
+            currentUser = null
         )
     )
     val uiState: StateFlow<loginUiState> = _uiState
 
     fun setPhoneNumber(phoneNumber: String) {
-        // Only allow numbers
         val filteredPhone = phoneNumber.filter { it.isDigit() }
         _uiState.update { it.copy(phoneNumber = filteredPhone) }
     }
@@ -38,20 +38,17 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(password = password) }
     }
 
-    // VALIDATE AND LOGIN
     fun loginUser() {
         viewModelScope.launch {
             val phoneNumber = _uiState.value.phoneNumber
             val password = _uiState.value.password
 
-            // Validate phone number
             val phoneError = ValidationInput.getPhoneNumberError(phoneNumber)
             if (phoneError != null) {
                 _uiState.update { it.copy(errorMessage = phoneError) }
                 return@launch
             }
 
-            // Validate password
             val passwordError = ValidationInput.getPasswordError(password)
             if (passwordError != null) {
                 _uiState.update { it.copy(errorMessage = passwordError) }
@@ -68,7 +65,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         it.copy(
                             isLoading = false,
                             isLoggedIn = true,
-                            errorMessage = null
+                            errorMessage = null,
+                            currentUser = user
                         )
                     }
                 } else {
@@ -90,20 +88,17 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // VALIDATE AND REGISTER
     fun registerUser() {
         viewModelScope.launch {
             val phoneNumber = _uiState.value.phoneNumber
             val password = _uiState.value.password
 
-            // Validate phone number
             val phoneError = ValidationInput.getPhoneNumberError(phoneNumber)
             if (phoneError != null) {
                 _uiState.update { it.copy(errorMessage = phoneError) }
                 return@launch
             }
 
-            // Validate password
             val passwordError = ValidationInput.getPasswordError(password)
             if (passwordError != null) {
                 _uiState.update { it.copy(errorMessage = passwordError) }
@@ -113,7 +108,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
             try {
-                // Check if user already exists
                 val existingUser = repository.checkIfUserExists(phoneNumber)
 
                 if (existingUser != null) {
@@ -124,10 +118,11 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         )
                     }
                 } else {
-                    // Create new user
                     val newUser = User(
                         phoneNumber = phoneNumber,
-                        password = password
+                        password = password,
+                        name = "User", // Default name
+                        gender = "Male" // Default gender
                     )
 
                     repository.insertUser(newUser)
@@ -150,7 +145,84 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // VALIDATE CONFIRM PASSWORD
+    // Profile Management Functions
+    fun updateUserName(newName: String) {
+        viewModelScope.launch {
+            val currentUser = _uiState.value.currentUser
+            if (currentUser != null) {
+                try {
+                    repository.updateUserName(currentUser.id, newName)
+                    val updatedUser = currentUser.copy(name = newName)
+                    _uiState.update {
+                        it.copy(currentUser = updatedUser)
+                    }
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(errorMessage = "Failed to update name: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    fun updateUserGender(newGender: String) {
+        viewModelScope.launch {
+            val currentUser = _uiState.value.currentUser
+            if (currentUser != null) {
+                try {
+                    repository.updateUserGender(currentUser.id, newGender)
+                    val updatedUser = currentUser.copy(gender = newGender)
+                    _uiState.update {
+                        it.copy(currentUser = updatedUser)
+                    }
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(errorMessage = "Failed to update gender: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    fun updateProfilePicture(profilePicturePath: String?) {
+        viewModelScope.launch {
+            val currentUser = _uiState.value.currentUser
+            if (currentUser != null) {
+                try {
+                    repository.updateUserProfilePicture(currentUser.id, profilePicturePath)
+                    val updatedUser = currentUser.copy(profilePicturePath = profilePicturePath)
+                    _uiState.update {
+                        it.copy(currentUser = updatedUser)
+                    }
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(errorMessage = "Failed to update profile picture: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    fun refreshUserData() {
+        viewModelScope.launch {
+            val currentUser = _uiState.value.currentUser
+            if (currentUser != null) {
+                try {
+                    val refreshedUser = repository.getUserById(currentUser.id)
+                    if (refreshedUser != null) {
+                        _uiState.update {
+                            it.copy(currentUser = refreshedUser)
+                        }
+                    }
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(errorMessage = "Failed to refresh user data: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+
     fun validateConfirmPassword(confirmPassword: String): String? {
         return when {
             confirmPassword.isBlank() -> "Please confirm your password"
@@ -169,7 +241,19 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             password = "",
             isLoading = false,
             errorMessage = null,
-            isLoggedIn = false
+            isLoggedIn = false,
+            currentUser = null
+        )
+    }
+
+    fun logout() {
+        _uiState.value = loginUiState(
+            phoneNumber = "",
+            password = "",
+            isLoading = false,
+            errorMessage = null,
+            isLoggedIn = false,
+            currentUser = null
         )
     }
 
@@ -177,7 +261,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(errorMessage = null) }
     }
 
-    // Check if form is valid for enabling buttons
     fun isLoginFormValid(): Boolean {
         return _uiState.value.phoneNumber.isNotBlank() &&
                 _uiState.value.password.isNotBlank() &&
