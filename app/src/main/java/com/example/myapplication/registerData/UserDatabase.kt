@@ -12,7 +12,7 @@ import com.example.myapplication.orderData.OrderDao
 
 @Database(
     entities = [User::class, Order::class],
-    version = 4,
+    version = 5,
 
     exportSchema = false
 )
@@ -31,7 +31,7 @@ abstract class UserDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     UserDatabase::class.java,
-                    "mixue_user_database_v4"  // Change database name to force new creation
+                    "mixue_user_database_v5"  // Change database name to force new creation
                 )
                     .fallbackToDestructiveMigration() // This recreates database if schema changes
                     .build()
