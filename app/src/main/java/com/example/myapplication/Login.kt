@@ -154,6 +154,12 @@ fun LoginScreen(
                 }
             }
 
+            TextButton(
+                onClick = { navController.navigate("admin_login") }
+            ) {
+                Text("Admin Login", fontSize = 16.sp, color = Color.Gray)
+            }
+
             // Show error dialog
             if (showErrorDialog) {
                 LoginErrorDialog(

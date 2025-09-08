@@ -28,24 +28,25 @@ import com.example.myapplication.orderData.*
 import java.text.SimpleDateFormat
 import java.util.*
 import android.util.Log
+import com.example.myapplication.orderData.UserSession.currentUserPhone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderHistoryScreen(navController: NavHostController) {
     val context = LocalContext.current
-    val orderManager = remember { OrderManager(context) }
+    val repository = remember { OrderRepository(context) }
     var orders by remember { mutableStateOf<List<Order>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Load orders when screen opens
+    // 修复：简化订单加载逻辑
     LaunchedEffect(Unit) {
         try {
             val currentUserPhone = UserSession.getCurrentUser()
             Log.d("OrderHistory", "Current user phone: $currentUserPhone")
 
             if (currentUserPhone != null) {
-                val userOrders = orderManager.getUserOrders(currentUserPhone)
+                val userOrders = repository.getUserOrders(currentUserPhone)
                 orders = userOrders
                 Log.d("OrderHistory", "Found ${userOrders.size} orders")
             } else {
@@ -54,12 +55,10 @@ fun OrderHistoryScreen(navController: NavHostController) {
         } catch (e: Exception) {
             Log.e("OrderHistory", "Error loading orders", e)
             errorMessage = "Error loading orders: ${e.message}"
-            e.printStackTrace()
         } finally {
             isLoading = false
         }
     }
-
     Scaffold(
         topBar = {
             TopAppBar(

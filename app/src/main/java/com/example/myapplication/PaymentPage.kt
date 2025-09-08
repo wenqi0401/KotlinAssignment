@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun PaymentPage(navController: NavHostController) {
     val context = LocalContext.current
-    val orderManager = remember { OrderManager(context) }
+    //val orderManager = remember { OrderManager(context) }
     val coroutineScope = rememberCoroutineScope()
 
     val cartItems = CartManager.getItems()
@@ -94,16 +94,17 @@ fun PaymentPage(navController: NavHostController) {
             )
         },
         bottomBar = {
+            val repository = remember { OrderRepository(context) }
+
             Button(
                 onClick = {
                     val orderId = "MX-" + (1000..9999).random()
-
                     val currentUserPhone = UserSession.getCurrentUser() ?: phoneNumber
+
                     if (UserSession.getCurrentUser() == null && phoneNumber.isNotEmpty()) {
                         UserSession.setCurrentUser(phoneNumber)
                     }
 
-                    // Convert cart items to order items
                     val orderItems = cartItems.map { cartItem ->
                         OrderItem(
                             name = cartItem.item.name,
@@ -129,23 +130,21 @@ fun PaymentPage(navController: NavHostController) {
                         cardNumber = if (selectedPaymentMethod == "visa") cardNumber else null
                     )
 
-                    // Save order to database
                     coroutineScope.launch {
                         try {
-                            orderManager.saveOrder(order)
-                            Log.d("PaymentPage", "Order saved with userPhone: ${order.userPhoneNumber}")
+                            repository.saveOrder(order)   // ✅ 改用 OrderRepository
+                            Log.d("PaymentPage", "Order saved: ${order.orderId}")
                             CartManager.clearAll()
-                            navController.navigate("trackOrder/$orderId/$address/$phoneNumber") {
+                            navController.navigate("trackOrder/$orderId") {
                                 popUpTo("menu_main") { inclusive = false }
                             }
                         } catch (e: Exception) {
-                            // Handle error - maybe show a snackbar
                             Log.e("PaymentPage", "Error saving order", e)
-                            e.printStackTrace()
                         }
                     }
                 },
-                modifier = Modifier
+
+            modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
                     .height(56.dp),

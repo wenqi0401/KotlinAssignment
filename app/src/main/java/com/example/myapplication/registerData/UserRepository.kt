@@ -33,4 +33,6 @@ class UserRepository(private val userDao: UserDao) {
     suspend fun updateUserProfilePicture(userId: Int, profilePicturePath: String?) {
         userDao.updateUserProfilePicture(userId, profilePicturePath)
     }
+
+
 }

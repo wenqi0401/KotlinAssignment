@@ -13,6 +13,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.platform.LocalContext
+import com.example.myapplication.orderData.OrderRepository
 
 @Composable
 fun MyApp() {
@@ -124,6 +126,27 @@ fun MyApp() {
             }
             composable ("user_profile") {
                 UserProfileScreen(navController = navController)
+            }
+
+            composable("admin_login") {
+                AdminLoginScreen(navController = navController)
+            }
+            composable("admin_dashboard") {
+                AdminDashboardScreen(navController = navController)
+            }
+
+            composable("trackOrder/{orderId}") { backStackEntry ->
+                val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
+                TrackOrderScreen(navController, orderId, repository = OrderRepository(LocalContext.current))
+            }
+
+            composable("admin_order_management") {
+                AdminOrderListScreen(navController, repository = OrderRepository(LocalContext.current))
+            }
+
+            composable("admin_order_detail/{orderId}") { backStackEntry ->
+                val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
+                AdminOrderDetailScreen(navController, orderId, repository = OrderRepository(LocalContext.current))
             }
         }
     }

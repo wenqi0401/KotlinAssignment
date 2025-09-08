@@ -2,20 +2,82 @@ package com.example.myapplication
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.myapplication.orderData.OrderRepository
 import java.text.SimpleDateFormat
 import java.util.*
 
+// 主要的 TrackOrderScreen 函数（带 repository 参数）
+@Composable
+fun TrackOrderScreen(
+    navController: NavController,
+    orderId: String,
+    repository: OrderRepository
+) {
+    var order by remember { mutableStateOf(repository.getOrderById(orderId)) }
+
+    // 如果 admin 改 status，这里会刷新
+    LaunchedEffect(orderId) {
+        order = repository.getOrderById(orderId)
+    }
+
+    if (order == null) {
+        Text("Order not found")
+        return
+    }
+
+    val calendar = Calendar.getInstance()
+    calendar.add(Calendar.MINUTE, 10)
+    val estimatedTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // 订单号
+        Text(text = "#${order!!.orderId}", fontSize = 22.sp)
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // LOGO - 如果图片不存在会出错，可以先注释掉
+        Image(
+            painter = painterResource(id = R.drawable.delivery_logo),
+            contentDescription = "Mixue Logo",
+            modifier = Modifier.size(180.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 状态进度
+        Text(text = "Status: ${order!!.status}", fontSize = 18.sp)
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(text = "Estimated delivery around $estimatedTime", fontSize = 14.sp)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // 地址信息
+        Text(text = "🏠 ${order!!.deliveryAddress}")
+        Text(text = "📞 ${order!!.phoneNumber}")
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(onClick = { navController.navigate("menu_main") }) {
+            Text("Back to Home")
+        }
+    }
+}
+
+// 重载函数 - 兼容旧的调用方式（带 address 和 phone 参数）
 @Composable
 fun TrackOrderScreen(
     navController: NavController,
@@ -23,63 +85,9 @@ fun TrackOrderScreen(
     address: String,
     phone: String
 ) {
-    // 模拟预计送达时间（例如 10 分钟后）
-    val calendar = Calendar.getInstance()
-    calendar.add(Calendar.MINUTE, 10)
-    val estimatedTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
+    val context = LocalContext.current
+    val repository = remember { OrderRepository(context) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // 订单号
-        Text(text = "#$orderId", fontSize = 22.sp, style = MaterialTheme.typography.titleLarge)
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // LOGO
-        Image(
-            painter = painterResource(id = R.drawable.delivery_logo), // 你自己的 logo drawable
-            contentDescription = "Mixue Logo",
-            modifier = Modifier.size(180.dp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 四个进度条图标
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(painter = painterResource(id = R.drawable.ic_order_placed), contentDescription = "Order Placed")
-            Image(painter = painterResource(id = R.drawable.ic_preparing), contentDescription = "Preparing")
-            Image(painter = painterResource(id = R.drawable.ic_on_the_way), contentDescription = "On the Way")
-            Image(painter = painterResource(id = R.drawable.ic_delivered), contentDescription = "Delivered")
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // 状态信息
-        Text(text = "Driver Arriving in 10 mins…", fontSize = 18.sp)
-        Text(text = "Estimated delivery around $estimatedTime", fontSize = 14.sp)
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // 送货信息
-        Text(text = "Delivery Details:", fontSize = 18.sp, style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "🏠 $address")
-        Text(text = "📞 $phone")
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // 回到首页按钮
-        ClickableText(
-            text = AnnotatedString("Back to Home"),
-            onClick = { navController.navigate("menu_main") }
-        )
-    }
+    // 调用主要的 TrackOrderScreen 函数
+    TrackOrderScreen(navController, orderId, repository)
 }
