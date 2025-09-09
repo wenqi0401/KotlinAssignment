@@ -3,6 +3,7 @@ package com.example.myapplication
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -58,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import java.io.File
 import java.io.FileOutputStream
 
@@ -77,9 +79,14 @@ fun UserProfileScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            // Copy image to app's internal storage
-            val filePath = copyImageToInternalStorage(context, uri)
-            authViewModel.updateProfilePicture(filePath)
+            try {
+                // Copy image to app's internal storage
+                val filePath = copyImageToInternalStorage(context, uri)
+                authViewModel.updateProfilePicture(filePath)
+                Log.d("ProfileImage", "Image saved to: $filePath")
+            } catch (e: Exception) {
+                Log.e("ProfileImage", "Error saving image: ${e.message}")
+            }
         }
     }
 
@@ -113,32 +120,16 @@ fun UserProfileScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-                                type = "image/*"
-                            }
                             galleryLauncher.launch("image/*")
                         }
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Profile Image
-                    if (!uiState.currentUser?.profilePicturePath.isNullOrEmpty()) {
-                        AsyncImage(
-                            model = File(uiState.currentUser?.profilePicturePath),
-                            contentDescription = "Profile",
-                            modifier = Modifier
-                                .size(100.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Profile",
-                            modifier = Modifier.size(100.dp),
-                            tint = Color.White
-                        )
-                    }
+                    // Profile Image with improved loading
+                    ProfileImage(
+                        profilePicturePath = uiState.currentUser?.profilePicturePath,
+                        modifier = Modifier.size(100.dp)
+                    )
 
                     Text("Change Photo", color = Color.White, modifier = Modifier.padding(top = 8.dp))
                 }
@@ -153,43 +144,46 @@ fun UserProfileScreen(
             ) {
                 Column {
                     // Name Row
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showNameDialog = true }
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Name", color = Color.White)
-                        Text(uiState.currentUser?.name ?: "User", color = Color.White)
-                    }
+                    ProfileInfoRow(
+                        label = "Name",
+                        value = uiState.currentUser?.name ?: "User",
+                        onClick = { showNameDialog = true }
+                    )
 
                     Divider(color = Color.White.copy(alpha = 0.2f))
 
                     // Phone Row (not editable)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Phone", color = Color.White)
-                        Text(uiState.currentUser?.phoneNumber ?: "", color = Color.White)
-                    }
+                    ProfileInfoRow(
+                        label = "Phone",
+                        value = uiState.currentUser?.phoneNumber ?: "",
+                        onClick = { /* Not editable */ },
+                        showArrow = false
+                    )
 
                     Divider(color = Color.White.copy(alpha = 0.2f))
 
                     // Gender Row
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showGenderDialog = true }
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Gender", color = Color.White)
-                        Text(uiState.currentUser?.gender ?: "Male", color = Color.White)
-                    }
+                    ProfileInfoRow(
+                        label = "Gender",
+                        value = uiState.currentUser?.gender ?: "Male",
+                        onClick = { showGenderDialog = true }
+                    )
+                }
+            }
+
+            // Display error message if any
+            uiState.errorMessage?.let { errorMessage ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.Red.copy(alpha = 0.1f))
+                ) {
+                    Text(
+                        text = errorMessage,
+                        color = Color.Red,
+                        modifier = Modifier.padding(16.dp)
+                    )
                 }
             }
         }
@@ -220,140 +214,92 @@ fun UserProfileScreen(
 }
 
 @Composable
-private fun ProfileRow(
-    label: String,
-    value: String,
-    onClick: () -> Unit,
-    isFirst: Boolean = false,
-    isLast: Boolean = false
+private fun ProfileImage(
+    profilePicturePath: String?,
+    modifier: Modifier = Modifier
 ) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onClick() }
-                .padding(horizontal = 24.dp, vertical = 20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = label,
-                color = Color.White,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = value,
-                    color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.End,
-                    fontWeight = FontWeight.Medium
+    Box(
+        modifier = modifier.clip(CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        if (!profilePicturePath.isNullOrEmpty()) {
+            val imageFile = File(profilePicturePath)
+            if (imageFile.exists()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(imageFile)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop,
+                    onError = {
+                        Log.e("ProfileImage", "Error loading image: $profilePicturePath")
+                    }
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                if (label != "Phone Number") { // Don't show arrow for phone number (not editable)
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "Edit $label",
-                        tint = Color.White.copy(alpha = 0.8f),
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
+            } else {
+                Log.w("ProfileImage", "Image file doesn't exist: $profilePicturePath")
+                DefaultProfileIcon(modifier = Modifier.fillMaxSize())
             }
-        }
-
-        if (!isLast) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .padding(horizontal = 24.dp)
-                    .background(Color.White.copy(alpha = 0.2f))
-            )
+        } else {
+            DefaultProfileIcon(modifier = Modifier.fillMaxSize())
         }
     }
 }
 
 @Composable
-private fun ProfileRowWithIcon(
+private fun DefaultProfileIcon(modifier: Modifier = Modifier) {
+    Icon(
+        imageVector = Icons.Default.AccountCircle,
+        contentDescription = "Default Profile",
+        modifier = modifier,
+        tint = Color.White
+    )
+}
+
+@Composable
+private fun ProfileInfoRow(
     label: String,
-    profilePicturePath: String?,
-    onClick: () -> Unit
+    value: String,
+    onClick: () -> Unit,
+    showArrow: Boolean = true
 ) {
-    Column {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = showArrow) { onClick() }
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onClick() }
-                .padding(horizontal = 24.dp, vertical = 20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = label,
-                color = Color.White,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.SemiBold
+                text = value,
+                color = Color.White.copy(alpha = 0.9f),
+                fontSize = 16.sp
             )
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    Color.Black.copy(alpha = 0.4f),
-                                    Color.Black.copy(alpha = 0.6f)
-                                )
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (profilePicturePath != null) {
-                        // Display the selected profile picture
-                        AsyncImage(
-                            model = Uri.parse(profilePicturePath),
-                            contentDescription = "Profile Picture",
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        // Show default icon if no profile picture is set
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Default Profile Picture",
-                            tint = Color.White,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
+            if (showArrow) {
+                Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "Change Profile Picture",
-                    tint = Color.White.copy(alpha = 0.8f),
-                    modifier = Modifier.size(22.dp)
+                    contentDescription = "Edit $label",
+                    tint = Color.White.copy(alpha = 0.7f),
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .padding(horizontal = 24.dp)
-                .background(Color.White.copy(alpha = 0.2f))
-        )
     }
 }
 
@@ -409,25 +355,23 @@ fun GenderSelectionDialog(
         title = { Text("Select Gender") },
         text = {
             Column {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    RadioButton(
-                        selected = selectedGender == "Male",
-                        onClick = { selectedGender = "Male" }
-                    )
-                    Text("Male", modifier = Modifier.padding(start = 8.dp))
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    RadioButton(
-                        selected = selectedGender == "Female",
-                        onClick = { selectedGender = "Female" }
-                    )
-                    Text("Female", modifier = Modifier.padding(start = 8.dp))
+                listOf("Male", "Female", "Other").forEach { gender ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { selectedGender = gender }
+                            .padding(vertical = 4.dp)
+                    ) {
+                        RadioButton(
+                            selected = selectedGender == gender,
+                            onClick = { selectedGender = gender }
+                        )
+                        Text(
+                            text = gender,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
                 }
             }
         },
@@ -446,33 +390,28 @@ fun GenderSelectionDialog(
     )
 }
 
-@Composable
-fun ErrorDialog(
-    message: String,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Error") },
-        text = { Text(message) },
-        confirmButton = {
-            Button(onClick = onDismiss) {
-                Text("OK")
+// Improved helper function to copy image to internal storage
+private fun copyImageToInternalStorage(context: Context, uri: Uri): String {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri)
+            ?: throw Exception("Cannot open input stream")
+
+        // Create a unique filename
+        val fileName = "profile_${System.currentTimeMillis()}.jpg"
+        val file = File(context.filesDir, fileName)
+
+        val outputStream = FileOutputStream(file)
+
+        inputStream.use { input ->
+            outputStream.use { output ->
+                input.copyTo(output)
             }
         }
-    )
-}
-// Helper function to copy image to internal storage
-private fun copyImageToInternalStorage(context: Context, uri: Uri): String {
-    val inputStream = context.contentResolver.openInputStream(uri)
-    val file = File(context.filesDir, "profile_${System.currentTimeMillis()}.jpg")
-    val outputStream = FileOutputStream(file)
 
-    inputStream?.use { input ->
-        outputStream.use { output ->
-            input.copyTo(output)
-        }
+        Log.d("ProfileImage", "Image copied successfully to: ${file.absolutePath}")
+        file.absolutePath
+    } catch (e: Exception) {
+        Log.e("ProfileImage", "Error copying image: ${e.message}")
+        throw e
     }
-
-    return file.absolutePath
 }

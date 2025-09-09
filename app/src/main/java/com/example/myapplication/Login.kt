@@ -121,7 +121,6 @@ fun LoginScreen(
             )
 
 
-
             Button(
                 onClick = { viewModel.loginUser() }, // Use database login
                 modifier = Modifier.fillMaxWidth(),

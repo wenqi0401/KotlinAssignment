@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.myapplication"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -68,7 +68,7 @@ dependencies {
     implementation("androidx.multidex:multidex:2.0.1")
 
     // Image Loading
-    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("io.coil-kt:coil-compose:2.5.0")
 
     // AndroidX Core
     implementation(libs.androidx.core.ktx)
@@ -108,8 +108,10 @@ dependencies {
     // Firebase BOM
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-auth")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+
 
     // Other libraries
     implementation("com.google.code.gson:gson:2.10.1")

@@ -1,5 +1,7 @@
 package com.example.myapplication.registerData
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
@@ -48,6 +50,7 @@ class UserRepository {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun checkIfUserExists(phoneNumber: String): User? {
         val query = usersCollection
             .whereEqualTo("phoneNumber", phoneNumber)

@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
     id("com.google.gms.google-services") version "4.4.3" apply false
 
+
 }
 buildscript {
     repositories {
@@ -17,6 +18,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.21")
 
     }
+
 }
 
 tasks.register("clean", Delete::class) {

@@ -21,6 +21,7 @@ media3CommonKtx = "1.8.0"
 volley = "1.2.1"
 firebaseDatabaseKtx = "22.0.0"
 firebaseAnalytics = "23.0.0"
+firebaseFirestoreKtx = "26.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +52,7 @@ androidx-media3-common-ktx = { group = "androidx.media3", name = "media3-common-
 volley = { group = "com.android.volley", name = "volley", version.ref = "volley" }
 firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebaseDatabaseKtx" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics", version.ref = "firebaseAnalytics" }
+firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
