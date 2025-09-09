@@ -120,13 +120,7 @@ fun LoginScreen(
                 )
             )
 
-            Button(
-                onClick = { navController.navigate("menu_main") },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
-            ) {
-                Text("Menu", color = Color.Red, fontSize = 30.sp)
-            }
+
 
             Button(
                 onClick = { viewModel.loginUser() }, // Use database login

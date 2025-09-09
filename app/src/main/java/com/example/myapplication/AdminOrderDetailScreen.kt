@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.admin.AdminTopBar
 import com.example.myapplication.orderData.OrderRepository
+import kotlinx.coroutines.launch
 
 @Composable
 fun AdminOrderDetailScreen(
@@ -19,8 +20,27 @@ fun AdminOrderDetailScreen(
     orderId: String,
     repository: OrderRepository
 ) {
-    var order by remember { mutableStateOf(repository.getOrderById(orderId)) }
+    var order by remember { mutableStateOf<com.example.myapplication.orderData.Order?>(null) }
     var showUpdateDialog by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
+    val coroutineScope = rememberCoroutineScope()
+
+    // Load order details
+    LaunchedEffect(orderId) {
+        isLoading = true
+        order = repository.getOrderById(orderId)
+        isLoading = false
+    }
+
+    if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = androidx.compose.ui.Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
 
     if (order == null) {
         Box(
@@ -42,7 +62,7 @@ fun AdminOrderDetailScreen(
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 订单信息卡片
+            // Order information card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp)
@@ -66,12 +86,23 @@ fun AdminOrderDetailScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("📋 Status:", fontSize = 16.sp, color = Color.Gray)
-                        StatusBadgeAdmin(order!!.status)
+                        // Simple Text instead of StatusBadge
+                        Text(
+                            text = order!!.status,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = when (order!!.status.lowercase()) {
+                                "preparing" -> Color(0xFFFF9800)
+                                "on the way" -> Color(0xFF2196F3)
+                                "delivered" -> Color(0xFF4CAF50)
+                                else -> Color.Gray
+                            }
+                        )
                     }
                 }
             }
 
-            // 订单项目
+            // Order items
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp)
@@ -98,7 +129,7 @@ fun AdminOrderDetailScreen(
                 }
             }
 
-            // 状态更新按钮
+            // Status update buttons
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp)
@@ -118,9 +149,11 @@ fun AdminOrderDetailScreen(
                     ) {
                         Button(
                             onClick = {
-                                repository.updateOrderStatus(orderId, "Preparing")
-                                order = repository.getOrderById(orderId)
-                                showUpdateDialog = true
+                                coroutineScope.launch {
+                                    repository.updateOrderStatus(orderId, "Preparing")
+                                    order = repository.getOrderById(orderId)
+                                    showUpdateDialog = true
+                                }
                             },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
@@ -133,9 +166,11 @@ fun AdminOrderDetailScreen(
 
                         Button(
                             onClick = {
-                                repository.updateOrderStatus(orderId, "On the way")
-                                order = repository.getOrderById(orderId)
-                                showUpdateDialog = true
+                                coroutineScope.launch {
+                                    repository.updateOrderStatus(orderId, "On the way")
+                                    order = repository.getOrderById(orderId)
+                                    showUpdateDialog = true
+                                }
                             },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
@@ -148,9 +183,11 @@ fun AdminOrderDetailScreen(
 
                         Button(
                             onClick = {
-                                repository.updateOrderStatus(orderId, "Delivered")
-                                order = repository.getOrderById(orderId)
-                                showUpdateDialog = true
+                                coroutineScope.launch {
+                                    repository.updateOrderStatus(orderId, "Delivered")
+                                    order = repository.getOrderById(orderId)
+                                    showUpdateDialog = true
+                                }
                             },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
@@ -165,7 +202,7 @@ fun AdminOrderDetailScreen(
             }
         }
 
-        // 更新确认对话框
+        // Update confirmation dialog
         if (showUpdateDialog) {
             AlertDialog(
                 onDismissRequest = { showUpdateDialog = false },

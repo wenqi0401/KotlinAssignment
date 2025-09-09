@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.orderData.UserSession
 import com.example.myapplication.registerData.User
 import com.example.myapplication.registerData.UserRepository
 import com.example.myapplication.registerData.loginUiState
@@ -11,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
-    private val repository = UserRepository()
+    private val repository = UserRepository() // This uses Firebase
     private val _uiState = MutableStateFlow(loginUiState())
     val uiState: StateFlow<loginUiState> = _uiState.asStateFlow()
 
@@ -28,7 +29,7 @@ class AuthViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
-                // Check if user already exists
+                // Check if user already exists in Firebase
                 val existingUser = repository.checkIfUserExists(_uiState.value.phoneNumber)
                 if (existingUser != null) {
                     _uiState.value = _uiState.value.copy(
@@ -38,7 +39,7 @@ class AuthViewModel : ViewModel() {
                     return@launch
                 }
 
-                // Create new user
+                // Create new user in Firebase
                 val newUser = User(
                     phoneNumber = _uiState.value.phoneNumber,
                     password = _uiState.value.password
@@ -65,12 +66,14 @@ class AuthViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
+                // Login with Firebase
                 val user = repository.getUserByCredentials(
                     _uiState.value.phoneNumber,
                     _uiState.value.password
                 )
 
                 if (user != null) {
+                    UserSession.setCurrentUser(user.phoneNumber)
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         isLoggedIn = true,
@@ -118,6 +121,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun logout() {
+        UserSession.clearSession()
         _uiState.value = loginUiState()
     }
 

@@ -16,23 +16,37 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.admin.AdminTopBar
 import com.example.myapplication.orderData.OrderRepository
+import kotlinx.coroutines.launch
 
 @Composable
 fun AdminOrderListScreen(
     navController: NavController,
     repository: OrderRepository
 ) {
-    var orders by remember { mutableStateOf(repository.getAllOrders()) }
+    var orders by remember { mutableStateOf<List<com.example.myapplication.orderData.Order>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    val coroutineScope = rememberCoroutineScope()
 
-    // 定期刷新订单列表
+    // Load orders
     LaunchedEffect(Unit) {
+        isLoading = true
         orders = repository.getAllOrders()
+        isLoading = false
     }
 
     Scaffold(
         topBar = { AdminTopBar("Order Management") { navController.popBackStack() } }
     ) { innerPadding ->
-        if (orders.isEmpty()) {
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (orders.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()

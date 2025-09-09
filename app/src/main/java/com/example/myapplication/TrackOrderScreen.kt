@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.orderData.OrderRepository
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -22,15 +23,34 @@ fun TrackOrderScreen(
     orderId: String,
     repository: OrderRepository
 ) {
-    var order by remember { mutableStateOf(repository.getOrderById(orderId)) }
+    var order by remember { mutableStateOf<com.example.myapplication.orderData.Order?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    val coroutineScope = rememberCoroutineScope()
 
-    // 如果 admin 改 status，这里会刷新
+    // Load order details
     LaunchedEffect(orderId) {
+        isLoading = true
         order = repository.getOrderById(orderId)
+        isLoading = false
+    }
+
+    if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
     }
 
     if (order == null) {
-        Text("Order not found")
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Order not found", fontSize = 18.sp)
+        }
         return
     }
 
