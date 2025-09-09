@@ -1,26 +1,47 @@
 package com.example.myapplication.registerData
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
-// Updated DATABASE entity with name and gender
-@Entity(tableName = "users")
+// REMOVE all Room annotations - Firebase uses plain data classes
 data class User(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    val phoneNumber: String,
-    val password: String,
-    val name: String = "User", // Default name
-    val gender: String = "Male", // Default gender
-    val profilePicturePath: String? = null // For storing profile picture path
-)
+    val id: String = "", // Firebase uses String IDs
+    val phoneNumber: String = "",
+    val password: String = "",
+    val name: String = "User",
+    val gender: String = "Male",
+    val profilePicturePath: String? = null
+) {
+    // Helper function to convert to Map for Firestore
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "id" to id,
+            "phoneNumber" to phoneNumber,
+            "password" to password,
+            "name" to name,
+            "gender" to gender,
+            "profilePicturePath" to profilePicturePath
+        )
+    }
 
-// UI STATE for login
+    companion object {
+        // Helper function to create User from Firestore document
+        fun fromMap(map: Map<String, Any>): User {
+            return User(
+                id = map["id"] as? String ?: "",
+                phoneNumber = map["phoneNumber"] as? String ?: "",
+                password = map["password"] as? String ?: "",
+                name = map["name"] as? String ?: "User",
+                gender = map["gender"] as? String ?: "Male",
+                profilePicturePath = map["profilePicturePath"] as? String
+            )
+        }
+    }
+}
+
+// UI STATE remains the same
 data class loginUiState(
     val phoneNumber: String = "",
     val password: String = "",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val isLoggedIn: Boolean = false,
-    val currentUser: User? = null // Store current logged-in user
+    val currentUser: User? = null
 )

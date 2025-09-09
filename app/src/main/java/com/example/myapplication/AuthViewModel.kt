@@ -1,256 +1,206 @@
 package com.example.myapplication
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.registerData.User
-import com.example.myapplication.registerData.UserDatabase
 import com.example.myapplication.registerData.UserRepository
 import com.example.myapplication.registerData.loginUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class AuthViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val database = UserDatabase.getDatabase(application)
-    private val repository = UserRepository(database.userDao())
-
-    private val _uiState = MutableStateFlow(
-        loginUiState(
-            phoneNumber = "",
-            password = "",
-            isLoading = false,
-            errorMessage = null,
-            isLoggedIn = false,
-            currentUser = null
-        )
-    )
-    val uiState: StateFlow<loginUiState> = _uiState
+class AuthViewModel : ViewModel() {
+    private val repository = UserRepository()
+    private val _uiState = MutableStateFlow(loginUiState())
+    val uiState: StateFlow<loginUiState> = _uiState.asStateFlow()
 
     fun setPhoneNumber(phoneNumber: String) {
-        val filteredPhone = phoneNumber.filter { it.isDigit() }
-        _uiState.update { it.copy(phoneNumber = filteredPhone) }
+        _uiState.value = _uiState.value.copy(phoneNumber = phoneNumber)
     }
 
     fun setPassword(password: String) {
-        _uiState.update { it.copy(password = password) }
-    }
-
-    fun loginUser() {
-        viewModelScope.launch {
-            val phoneNumber = _uiState.value.phoneNumber
-            val password = _uiState.value.password
-
-            val phoneError = ValidationInput.getPhoneNumberError(phoneNumber)
-            if (phoneError != null) {
-                _uiState.update { it.copy(errorMessage = phoneError) }
-                return@launch
-            }
-
-            val passwordError = ValidationInput.getPasswordError(password)
-            if (passwordError != null) {
-                _uiState.update { it.copy(errorMessage = passwordError) }
-                return@launch
-            }
-
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-
-            try {
-                val user = repository.getUserByCredentials(phoneNumber, password)
-
-                if (user != null) {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            isLoggedIn = true,
-                            errorMessage = null,
-                            currentUser = user // This ensures the current user is set properly
-                        )
-                    }
-                } else {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = "Invalid phone number or password"
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        errorMessage = "Login failed: ${e.message}"
-                    )
-                }
-            }
-        }
+        _uiState.value = _uiState.value.copy(password = password)
     }
 
     fun registerUser() {
         viewModelScope.launch {
-            val phoneNumber = _uiState.value.phoneNumber
-            val password = _uiState.value.password
-
-            val phoneError = ValidationInput.getPhoneNumberError(phoneNumber)
-            if (phoneError != null) {
-                _uiState.update { it.copy(errorMessage = phoneError) }
-                return@launch
-            }
-
-            val passwordError = ValidationInput.getPasswordError(password)
-            if (passwordError != null) {
-                _uiState.update { it.copy(errorMessage = passwordError) }
-                return@launch
-            }
-
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             try {
-                val existingUser = repository.checkIfUserExists(phoneNumber)
-
+                // Check if user already exists
+                val existingUser = repository.checkIfUserExists(_uiState.value.phoneNumber)
                 if (existingUser != null) {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = "Phone number already registered"
-                        )
-                    }
-                } else {
-                    val newUser = User(
-                        phoneNumber = phoneNumber,
-                        password = password,
-                        name = "User", // Default name
-                        gender = "Male" // Default gender
-                    )
-
-                    repository.insertUser(newUser)
-
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = null
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
+                    _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = "Registration failed: ${e.message}"
+                        errorMessage = "Phone number already registered"
                     )
+                    return@launch
                 }
+
+                // Create new user
+                val newUser = User(
+                    phoneNumber = _uiState.value.phoneNumber,
+                    password = _uiState.value.password
+                )
+
+                val userId = repository.insertUser(newUser)
+
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    currentUser = newUser.copy(id = userId)
+                )
+
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = "Registration failed: ${e.message}"
+                )
             }
         }
     }
 
-    // Profile Management Functions
-// AuthViewModel.kt (simplified update functions)
+    fun loginUser() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+
+            try {
+                val user = repository.getUserByCredentials(
+                    _uiState.value.phoneNumber,
+                    _uiState.value.password
+                )
+
+                if (user != null) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoggedIn = true,
+                        currentUser = user
+                    )
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "Invalid phone number or password"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = "Login failed: ${e.message}"
+                )
+            }
+        }
+    }
+
+    fun validateConfirmPassword(confirmPassword: String): String? {
+        return if (_uiState.value.password != confirmPassword) {
+            "Passwords do not match"
+        } else {
+            null
+        }
+    }
+
+    fun isRegisterFormValid(confirmPassword: String): Boolean {
+        return _uiState.value.phoneNumber.length >= 10 &&
+                _uiState.value.password.length >= 8 &&
+                _uiState.value.password == confirmPassword
+    }
+
+    fun clearErrorMessage() {
+        _uiState.value = _uiState.value.copy(errorMessage = null)
+    }
+
+    fun clearCredentials() {
+        _uiState.value = _uiState.value.copy(
+            phoneNumber = "",
+            password = "",
+            errorMessage = null
+        )
+    }
+
+    fun logout() {
+        _uiState.value = loginUiState()
+    }
+
     fun updateUserName(newName: String) {
         viewModelScope.launch {
-            val currentUser = _uiState.value.currentUser
-            if (currentUser != null) {
-                val updatedUser = currentUser.copy(name = newName)
-                repository.updateUser(updatedUser)
-                _uiState.update { it.copy(currentUser = updatedUser) }
+            try {
+                val currentUser = _uiState.value.currentUser
+                if (currentUser != null && currentUser.id.isNotEmpty()) {
+                    repository.updateUserName(currentUser.id, newName)
+
+                    // Update local state
+                    _uiState.value = _uiState.value.copy(
+                        currentUser = currentUser.copy(name = newName)
+                    )
+                }
+            } catch (e: Exception) {
+                // Handle error
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = "Failed to update name: ${e.message}"
+                )
             }
         }
     }
 
     fun updateUserGender(newGender: String) {
         viewModelScope.launch {
-            val currentUser = _uiState.value.currentUser
-            if (currentUser != null) {
-                val updatedUser = currentUser.copy(gender = newGender)
-                repository.updateUser(updatedUser)
-                _uiState.update { it.copy(currentUser = updatedUser) }
+            try {
+                val currentUser = _uiState.value.currentUser
+                if (currentUser != null && currentUser.id.isNotEmpty()) {
+                    repository.updateUserGender(currentUser.id, newGender)
+
+                    // Update local state
+                    _uiState.value = _uiState.value.copy(
+                        currentUser = currentUser.copy(gender = newGender)
+                    )
+                }
+            } catch (e: Exception) {
+                // Handle error
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = "Failed to update gender: ${e.message}"
+                )
             }
         }
     }
 
     fun updateProfilePicture(profilePicturePath: String?) {
         viewModelScope.launch {
-            val currentUser = _uiState.value.currentUser
-            if (currentUser != null) {
-                val updatedUser = currentUser.copy(profilePicturePath = profilePicturePath)
-                repository.updateUser(updatedUser)
-                _uiState.update { it.copy(currentUser = updatedUser) }
+            try {
+                val currentUser = _uiState.value.currentUser
+                if (currentUser != null && currentUser.id.isNotEmpty()) {
+                    repository.updateUserProfilePicture(currentUser.id, profilePicturePath)
+
+                    // Update local state
+                    _uiState.value = _uiState.value.copy(
+                        currentUser = currentUser.copy(profilePicturePath = profilePicturePath)
+                    )
+                }
+            } catch (e: Exception) {
+                // Handle error
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = "Failed to update profile picture: ${e.message}"
+                )
             }
         }
     }
 
     fun refreshUserData() {
         viewModelScope.launch {
-            val currentUser = _uiState.value.currentUser
-            if (currentUser != null) {
-                try {
-                    val refreshedUser = repository.getUserById(currentUser.id)
-                    if (refreshedUser != null) {
-                        _uiState.update {
-                            it.copy(
-                                currentUser = refreshedUser,
-                                errorMessage = null
-                            )
-                        }
-                    }
-                } catch (e: Exception) {
-                    _uiState.update {
-                        it.copy(errorMessage = "Failed to refresh user data: ${e.message}")
+            try {
+                val currentUser = _uiState.value.currentUser
+                if (currentUser != null && currentUser.id.isNotEmpty()) {
+                    // Fetch the latest user data from Firebase
+                    val updatedUser = repository.getUserById(currentUser.id)
+                    if (updatedUser != null) {
+                        _uiState.value = _uiState.value.copy(
+                            currentUser = updatedUser
+                        )
                     }
                 }
+            } catch (e: Exception) {
+                // Handle error quietly (don't show error message for refresh)
+                println("Failed to refresh user data: ${e.message}")
             }
         }
-    }
-
-    fun validateConfirmPassword(confirmPassword: String): String? {
-        return when {
-            confirmPassword.isBlank() -> "Please confirm your password"
-            confirmPassword != _uiState.value.password -> "Passwords do not match"
-            else -> null
-        }
-    }
-
-    fun passwordsMatch(confirmPassword: String): Boolean {
-        return _uiState.value.password == confirmPassword
-    }
-
-    fun clearCredentials() {
-        _uiState.value = loginUiState(
-            phoneNumber = "",
-            password = "",
-            isLoading = false,
-            errorMessage = null,
-            isLoggedIn = false,
-            currentUser = null
-        )
-    }
-
-    fun logout() {
-        _uiState.value = loginUiState(
-            phoneNumber = "",
-            password = "",
-            isLoading = false,
-            errorMessage = null,
-            isLoggedIn = false,
-            currentUser = null
-        )
-    }
-
-    fun clearErrorMessage() {
-        _uiState.update { it.copy(errorMessage = null) }
-    }
-
-    fun isLoginFormValid(): Boolean {
-        return _uiState.value.phoneNumber.isNotBlank() &&
-                _uiState.value.password.isNotBlank() &&
-                ValidationInput.isValidPhoneNumber(_uiState.value.phoneNumber) &&
-                ValidationInput.isValidPassword(_uiState.value.password)
-    }
-
-    fun isRegisterFormValid(confirmPassword: String): Boolean {
-        return isLoginFormValid() &&
-                confirmPassword.isNotBlank() &&
-                passwordsMatch(confirmPassword)
     }
 }
