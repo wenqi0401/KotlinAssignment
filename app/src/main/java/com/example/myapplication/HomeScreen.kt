@@ -89,9 +89,6 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 navController.navigate("item_detail/${item.name}")
             }
 
-            MenuOptionButton("Menu", Icons.Default.ArrowForward) {
-                navController.navigate("menu_full")
-            }
 
             Spacer(modifier = Modifier.weight(1f))
 

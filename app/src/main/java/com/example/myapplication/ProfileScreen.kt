@@ -125,7 +125,7 @@ fun ProfileScreen(
                 )
                 ProfileOptionItem(
                     title = "Help Center",
-                    onClick = { /* Handle Help Center click */ }
+                    onClick = { navController.navigate("help_center") }
                 )
             }
 
@@ -193,11 +193,4 @@ fun ProfileOptionItem(title: String, onClick: () -> Unit) {
             )
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProfileScreenPreview() {
-    val navController = androidx.navigation.compose.rememberNavController()
-    ProfileScreen(navController = navController)
 }

@@ -148,6 +148,10 @@ fun MyApp() {
                 val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
                 AdminOrderDetailScreen(navController, orderId, repository = OrderRepository(LocalContext.current))
             }
+            composable("help_center") {
+                HelpCenterScreen(navController = navController)
+            }
+
         }
     }
 }
