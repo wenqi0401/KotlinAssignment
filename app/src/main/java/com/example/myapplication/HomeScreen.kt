@@ -42,6 +42,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.myapplication.voucher.PointsSection
+import com.example.myapplication.voucher.VoucherSection
 import kotlinx.coroutines.delay
 import kotlin.math.min // Add this import
 
@@ -89,6 +91,12 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 navController.navigate("item_detail/${item.name}")
             }
 
+            // voucher
+            VoucherSection(navController)
+
+            // point
+            PointsSection(navController)
+
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -105,6 +113,8 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
             ) {
                 Text("Logout")
             }
+
+
 
 
         }

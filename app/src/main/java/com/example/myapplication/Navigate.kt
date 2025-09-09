@@ -139,6 +139,24 @@ fun MyApp() {
                 HelpCenterScreen(navController = navController)
             }
 
+            // Voucher and Points Center
+            composable("voucher_center") {
+                VoucherCenterScreen(navController = navController)
+            }
+
+            composable("points_center") {
+                UserPointsScreen(navController = navController)
+            }
+
+            // Admin Voucher Management
+            composable("admin_voucher_management") {
+                AdminVoucherManagementScreen(navController = navController)
+            }
+
+            // Admin Points Management (Optional - if you want admins to manage user points)
+            composable("admin_points_management") {
+                AdminPointsManagementScreen(navController = navController)
+            }
         }
     }
 }

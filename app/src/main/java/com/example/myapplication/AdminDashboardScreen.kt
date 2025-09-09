@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.R.attr.onClick
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
@@ -56,6 +57,46 @@ fun AdminDashboardScreen(navController: NavController) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     "Manage Orders",
+                    fontSize = 18.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            // voucher
+            ElevatedButton(
+                onClick = { navController.navigate("admin_voucher_management") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp),
+                colors = ButtonDefaults.elevatedButtonColors(
+                    containerColor = Color(0xFF4CAF50)
+                )
+            ) {
+                Text("🎫", fontSize = 24.sp)
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    "Manage Vouchers",
+                    fontSize = 18.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            // point
+            ElevatedButton(
+                onClick = { navController.navigate("admin_points_management") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp),
+                colors = ButtonDefaults.elevatedButtonColors(
+                    containerColor = Color(0xFFFF9800)
+                )
+            ) {
+                Text("⭐", fontSize = 24.sp)
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    "Manage Points",
                     fontSize = 18.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Medium
