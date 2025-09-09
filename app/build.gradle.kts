@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-kapt")
+
     id("org.jetbrains.kotlin.kapt")
     id("com.google.gms.google-services")
 }
@@ -22,7 +24,9 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-
+    kapt {
+        correctErrorTypes = true
+    }
 
     buildTypes {
         release {
@@ -51,10 +55,10 @@ android {
 extensions.configure<KaptExtension> {
     correctErrorTypes = true
 }
-
 dependencies {
     // Image Loading
-    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("io.coil-kt:coil-compose:2.5.0") // Use only the latest version
+    implementation("androidx.core:core:1.15.0")
     // AndroidX
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -90,13 +94,9 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-
     // Dependency Injection
     implementation("javax.inject:javax.inject:1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-
-    // Image Loading
-    implementation("io.coil-kt:coil-compose:2.5.0")
 
     // Accompanist
     implementation("com.google.accompanist:accompanist-permissions:0.24.13-rc")
@@ -115,6 +115,5 @@ dependencies {
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
     implementation("com.google.firebase:firebase-analytics")
-
 }
 

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "788095742849",
+    "project_id": "mixue-1c429",
+    "storage_bucket": "mixue-1c429.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:788095742849:android:c3d37558c55ab59e996e80",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMjk65qDFw42v65_5n6b9FFj4QsHbXmWo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
