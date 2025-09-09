@@ -1,11 +1,7 @@
-import org.jetbrains.kotlin.gradle.plugin.KaptExtension
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("kotlin-kapt")
-
     id("org.jetbrains.kotlin.kapt")
     id("com.google.gms.google-services")
 }
@@ -22,10 +18,21 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled = true
     }
 
-    kapt {
-        correctErrorTypes = true
+    // ADD THIS to handle duplicate META-INF files
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/androidx.vectordrawable_vectordrawable.version",
+                "META-INF/AL2.0",
+                "META-INF/LGPL2.1"
+            )
+            pickFirsts += setOf(
+                "META-INF/androidx.vectordrawable_vectordrawable.version"
+            )
+        }
     }
 
     buildTypes {
@@ -50,19 +57,25 @@ android {
     buildFeatures {
         compose = true
     }
+
+    kapt {
+        correctErrorTypes = true
+    }
 }
 
-extensions.configure<KaptExtension> {
-    correctErrorTypes = true
-}
 dependencies {
+    // Multidex support
+    implementation("androidx.multidex:multidex:2.0.1")
+
     // Image Loading
-    implementation("io.coil-kt:coil-compose:2.5.0") // Use only the latest version
-    implementation("androidx.core:core:1.15.0")
-    // AndroidX
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
+    // AndroidX Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+
+    // Compose BOM and UI
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -71,24 +84,15 @@ dependencies {
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.navigation.compose.v280)
 
     // Lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.5.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
 
     // Room
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    implementation(libs.androidx.foundation.layout)
-    implementation(libs.material3)
-    implementation(libs.ui)
-    implementation(libs.androidx.runtime)
-    implementation(libs.androidx.foundation)
-    implementation(libs.androidx.media3.common.ktx)
-    implementation(libs.volley)
-    implementation(libs.animated.vector.drawable)
     kapt("androidx.room:room-compiler:2.6.1")
 
     // Coroutines
@@ -99,7 +103,17 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Accompanist
-    implementation("com.google.accompanist:accompanist-permissions:0.24.13-rc")
+    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+
+    // Firebase BOM
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-auth")
+
+    // Other libraries
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation(libs.volley)
 
     // Testing
     testImplementation(libs.junit)
@@ -109,11 +123,16 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-    implementation("com.google.code.gson:gson:2.10.1")
-
-    // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
-    implementation("com.google.firebase:firebase-analytics")
 }
 
+// Force resolution strategy to handle conflicts
+configurations.all {
+    resolutionStrategy {
+        force(
+            "androidx.core:core-ktx:1.12.0",
+            "androidx.lifecycle:lifecycle-common:2.8.4",
+            "androidx.lifecycle:lifecycle-runtime:2.8.4"
+        )
+        exclude(group = "com.android.support")
+    }
+}
