@@ -1,8 +1,11 @@
+import org.jetbrains.kotlin.gradle.plugin.KaptExtension
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("kotlin-kapt")
+    id("org.jetbrains.kotlin.kapt")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -19,9 +22,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    kapt {
-        correctErrorTypes = true
-    }
+
 
     buildTypes {
         release {
@@ -45,6 +46,10 @@ android {
     buildFeatures {
         compose = true
     }
+}
+
+extensions.configure<KaptExtension> {
+    correctErrorTypes = true
 }
 
 dependencies {
@@ -79,6 +84,7 @@ dependencies {
     implementation(libs.androidx.foundation)
     implementation(libs.androidx.media3.common.ktx)
     implementation(libs.volley)
+    implementation(libs.animated.vector.drawable)
     kapt("androidx.room:room-compiler:2.6.1")
 
     // Coroutines
@@ -105,4 +111,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
+    implementation("com.google.firebase:firebase-analytics")
+
 }
+
