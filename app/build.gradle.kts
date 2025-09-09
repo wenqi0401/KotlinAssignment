@@ -73,17 +73,24 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     implementation(libs.androidx.foundation.layout)
+    implementation(libs.material3)
+    implementation(libs.ui)
+    implementation(libs.androidx.runtime)
+    implementation(libs.androidx.foundation)
+    implementation(libs.androidx.media3.common.ktx)
+    implementation(libs.volley)
     kapt("androidx.room:room-compiler:2.6.1")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
 
     // Dependency Injection
     implementation("javax.inject:javax.inject:1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Image Loading
-    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("io.coil-kt:coil-compose:2.5.0")
 
     // Accompanist
     implementation("com.google.accompanist:accompanist-permissions:0.24.13-rc")
