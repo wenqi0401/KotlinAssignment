@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.admin.AdminTopBar
+import com.example.myapplication.orderData.Order
 import com.example.myapplication.orderData.OrderRepository
 
 @Composable
@@ -22,72 +23,114 @@ fun AdminOrderListScreen(
     navController: NavController,
     repository: OrderRepository
 ) {
-    var orders by remember { mutableStateOf(repository.getAllOrders()) }
+    // 不要在 remember 里直接调用 suspend 函数
+    var orders by remember { mutableStateOf<List<Order>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // 定期刷新订单列表
+    // 初次进入页面加载一次（如需定时刷新可再加循环/定时器）
     LaunchedEffect(Unit) {
-        orders = repository.getAllOrders()
+        try {
+            orders = repository.getAllOrders()   // suspend -> OK in coroutine
+        } catch (e: Exception) {
+            errorMessage = e.message ?: "Failed to load orders"
+        } finally {
+            isLoading = false
+        }
     }
 
     Scaffold(
         topBar = { AdminTopBar("Order Management") { navController.popBackStack() } }
     ) { innerPadding ->
-        if (orders.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            errorMessage != null -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        "📋",
-                        fontSize = 64.sp
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "No orders yet",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Gray
+                        text = errorMessage ?: "Error",
+                        color = Color.Red,
+                        fontSize = 16.sp
                     )
                 }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.padding(innerPadding).padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(orders) { order ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                navController.navigate("admin_order_detail/${order.orderId}")
-                            },
-                        elevation = CardDefaults.cardElevation(4.dp),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.Top
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        "Order #${order.orderId}",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF2196F3)
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text("📱 ${order.phoneNumber}", fontSize = 14.sp)
-                                    Text("💰 RM ${String.format("%.2f", order.total)}", fontSize = 14.sp)
-                                }
 
-                                // Status Badge
-                                StatusBadgeAdmin(order.status)
+            orders.isEmpty() -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("📋", fontSize = 64.sp)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "No orders yet",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+
+            else -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(orders) { order ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    navController.navigate("admin_order_detail/${order.orderId}")
+                                },
+                            elevation = CardDefaults.cardElevation(4.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            "Order #${order.orderId}",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF2196F3)
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text("📱 ${order.phoneNumber}", fontSize = 14.sp)
+                                        Text(
+                                            "💰 RM ${String.format("%.2f", order.total)}",
+                                            fontSize = 14.sp
+                                        )
+                                    }
+
+                                    // Status Badge（保持你原来的）
+                                    StatusBadgeAdmin(order.status)
+                                }
                             }
                         }
                     }

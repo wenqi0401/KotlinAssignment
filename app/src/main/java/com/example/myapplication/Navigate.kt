@@ -37,7 +37,12 @@ fun MyApp() {
                     "login",
                     "register",
                     "register_success",
-                    "login_success"
+                    "login_success",
+                    "admin_login",
+                    "admin_dashboard",
+                    "admin_order_management",
+                    "admin_order_detail/{orderId}"
+
                 )
             ) {
                 BottomNavigationBar(navController = navController)
@@ -90,19 +95,6 @@ fun MyApp() {
                 PaymentPage(navController = navController)
             }
 
-            composable("trackOrder/{orderId}/{address}/{phone}") { backStackEntry ->
-                val orderId = backStackEntry.arguments?.getString("orderId") ?: "MX-0000"
-                val address = backStackEntry.arguments?.getString("address") ?: "Unknown Address"
-                val phone = backStackEntry.arguments?.getString("phone") ?: "Unknown Phone"
-
-                TrackOrderScreen(
-                    navController = navController,
-                    orderId = orderId,
-                    address = address,
-                    phone = phone
-                )
-            }
-
             composable("order_history") {
                 OrderHistoryScreen(navController = navController)
             }
@@ -133,11 +125,6 @@ fun MyApp() {
             }
             composable("admin_dashboard") {
                 AdminDashboardScreen(navController = navController)
-            }
-
-            composable("trackOrder/{orderId}") { backStackEntry ->
-                val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
-                TrackOrderScreen(navController, orderId, repository = OrderRepository(LocalContext.current))
             }
 
             composable("admin_order_management") {

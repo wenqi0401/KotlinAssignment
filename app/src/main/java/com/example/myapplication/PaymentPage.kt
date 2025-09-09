@@ -58,7 +58,7 @@ fun PaymentPage(navController: NavHostController) {
         LaunchedEffect(Unit) {
             kotlinx.coroutines.delay(2000)
             CartManager.clearAll()
-            navController.navigate("track_order") {
+            navController.navigate("order_history") {
                 popUpTo("menu_main") { inclusive = false }
             }
         }
@@ -66,6 +66,7 @@ fun PaymentPage(navController: NavHostController) {
         OrderSuccessScreen()
         return
     }
+
 
     Scaffold(
         topBar = {
@@ -99,11 +100,19 @@ fun PaymentPage(navController: NavHostController) {
             Button(
                 onClick = {
                     val orderId = "MX-" + (1000..9999).random()
-                    val currentUserPhone = UserSession.getCurrentUser() ?: phoneNumber
 
-                    if (UserSession.getCurrentUser() == null && phoneNumber.isNotEmpty()) {
-                        UserSession.setCurrentUser(phoneNumber)
+                    // 总是使用已登录用户的手机号码作为userPhoneNumber
+                    val currentUserPhone = UserSession.getCurrentUser()
+
+                    if (currentUserPhone == null) {
+                        // 如果没有用户登录，导航到登录页面
+                        navController.navigate("login")
+                        return@Button
                     }
+
+                    // 使用付款表单的电话号码作为配送联系方式
+                    // 但使用已登录用户的电话号码来关联订单
+                    val deliveryPhoneNumber = if (phoneNumber.isNotEmpty()) phoneNumber else currentUserPhone
 
                     val orderItems = cartItems.map { cartItem ->
                         OrderItem(
@@ -116,7 +125,7 @@ fun PaymentPage(navController: NavHostController) {
 
                     val order = Order(
                         orderId = orderId,
-                        userPhoneNumber = currentUserPhone,
+                        userPhoneNumber = currentUserPhone,  // 这将订单链接到已登录的用户
                         items = orderItems,
                         subtotal = subtotal,
                         deliveryFee = deliveryFee,
@@ -124,7 +133,7 @@ fun PaymentPage(navController: NavHostController) {
                         voucher = voucher,
                         total = total,
                         deliveryAddress = address,
-                        phoneNumber = phoneNumber,
+                        phoneNumber = deliveryPhoneNumber,  // 这是配送联系电话
                         comment = comment,
                         paymentMethod = selectedPaymentMethod,
                         cardNumber = if (selectedPaymentMethod == "visa") cardNumber else null
@@ -132,12 +141,9 @@ fun PaymentPage(navController: NavHostController) {
 
                     coroutineScope.launch {
                         try {
-                            repository.saveOrder(order)   // ✅ 改用 OrderRepository
-                            Log.d("PaymentPage", "Order saved: ${order.orderId}")
-                            CartManager.clearAll()
-                            navController.navigate("trackOrder/$orderId") {
-                                popUpTo("menu_main") { inclusive = false }
-                            }
+                            repository.saveOrder(order)
+                            Log.d("PaymentPage", "Order saved: ${order.orderId} for user: ${order.userPhoneNumber}")
+                            showOrderSuccess = true
                         } catch (e: Exception) {
                             Log.e("PaymentPage", "Error saving order", e)
                         }

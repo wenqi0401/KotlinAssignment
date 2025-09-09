@@ -92,43 +92,6 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
 
             Spacer(modifier = Modifier.weight(1f))
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            // 🚚 Track Order Bar/Button
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .clickable {
-                        // 这里你要传订单号、地址、电话
-                        val orderId = "MX-" + (1000..9999).random()
-                        val address = "Default Address"   
-                        val phone = "0123456789"
-                        navController.navigate("trackOrder/$orderId/$address/$phone")
-                    },
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE0E0)), // 浅红背景
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text("Track your latest order", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Red)
-                        Text("Click to see delivery status", fontSize = 14.sp, color = Color.DarkGray)
-                    }
-                    Icon(
-                        imageVector = Icons.Default.ArrowForward,
-                        contentDescription = "Go to Track Order",
-                        tint = Color.Red
-                    )
-                }
-            }
-
             Button(
                 onClick = {
                     navController.navigate("login") {

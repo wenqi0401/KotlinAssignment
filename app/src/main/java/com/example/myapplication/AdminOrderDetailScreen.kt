@@ -12,6 +12,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.admin.AdminTopBar
 import com.example.myapplication.orderData.OrderRepository
+import com.example.myapplication.orderData.Order
+import kotlinx.coroutines.launch
 
 @Composable
 fun AdminOrderDetailScreen(
@@ -19,8 +21,28 @@ fun AdminOrderDetailScreen(
     orderId: String,
     repository: OrderRepository
 ) {
-    var order by remember { mutableStateOf(repository.getOrderById(orderId)) }
+    var order by remember { mutableStateOf<Order?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
     var showUpdateDialog by remember { mutableStateOf(false) }
+
+    // 协程作用域（按钮点击时用）
+    val coroutineScope = rememberCoroutineScope()
+
+    // 初始加载
+    LaunchedEffect(orderId) {
+        order = repository.getOrderById(orderId)
+        isLoading = false
+    }
+
+    if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = androidx.compose.ui.Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
 
     if (order == null) {
         Box(
@@ -58,7 +80,13 @@ fun AdminOrderDetailScreen(
 
                     OrderInfoRow("📱 Phone", order!!.phoneNumber)
                     OrderInfoRow("📍 Address", order!!.deliveryAddress)
-                    OrderInfoRow("📅 Date", java.text.SimpleDateFormat("MMM dd, yyyy HH:mm", java.util.Locale.getDefault()).format(java.util.Date(order!!.orderDate)))
+                    OrderInfoRow(
+                        "📅 Date",
+                        java.text.SimpleDateFormat(
+                            "MMM dd, yyyy HH:mm",
+                            java.util.Locale.getDefault()
+                        ).format(java.util.Date(order!!.orderDate))
+                    )
                     OrderInfoRow("💰 Total", "RM ${String.format("%.2f", order!!.total)}")
 
                     Row(
@@ -116,53 +144,26 @@ fun AdminOrderDetailScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Button(
-                            onClick = {
-                                repository.updateOrderStatus(orderId, "Preparing")
-                                order = repository.getOrderById(orderId)
-                                showUpdateDialog = true
-                            },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFFF9800)
-                            ),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text("Preparing", fontSize = 12.sp)
-                        }
+                        StatusUpdateButton(
+                            "Preparing", Color(0xFFFF9800), orderId, repository,
+                            modifier = Modifier.weight(1f)
+                        ) { order = it; showUpdateDialog = true }
 
-                        Button(
-                            onClick = {
-                                repository.updateOrderStatus(orderId, "On the way")
-                                order = repository.getOrderById(orderId)
-                                showUpdateDialog = true
-                            },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF2196F3)
-                            ),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text("On the way", fontSize = 12.sp)
-                        }
+                        StatusUpdateButton(
+                            "On the way", Color(0xFF2196F3), orderId, repository,
+                            modifier = Modifier.weight(1f)
+                        ) { order = it; showUpdateDialog = true }
 
-                        Button(
-                            onClick = {
-                                repository.updateOrderStatus(orderId, "Delivered")
-                                order = repository.getOrderById(orderId)
-                                showUpdateDialog = true
-                            },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF4CAF50)
-                            ),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text("Delivered", fontSize = 12.sp)
-                        }
+                        StatusUpdateButton(
+                            "Delivered", Color(0xFF4CAF50), orderId, repository,
+                            modifier = Modifier.weight(1f)
+                        ) { order = it; showUpdateDialog = true }
                     }
+
                 }
             }
+
+
         }
 
         // 更新确认对话框
@@ -180,6 +181,34 @@ fun AdminOrderDetailScreen(
         }
     }
 }
+
+@Composable
+fun StatusUpdateButton(
+    newStatus: String,
+    color: Color,
+    orderId: String,
+    repository: OrderRepository,
+    modifier: Modifier = Modifier,
+    onUpdated: (Order?) -> Unit
+) {
+    val coroutineScope = rememberCoroutineScope()
+
+    Button(
+        onClick = {
+            coroutineScope.launch {
+                repository.updateOrderStatus(orderId, newStatus)
+                val updated = repository.getOrderById(orderId)
+                onUpdated(updated)
+            }
+        },
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(containerColor = color),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Text(newStatus, fontSize = 12.sp)
+    }
+}
+
 
 @Composable
 fun OrderInfoRow(label: String, value: String) {

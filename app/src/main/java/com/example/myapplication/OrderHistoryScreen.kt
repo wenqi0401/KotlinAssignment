@@ -39,7 +39,6 @@ fun OrderHistoryScreen(navController: NavHostController) {
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // 修复：简化订单加载逻辑
     LaunchedEffect(Unit) {
         try {
             val currentUserPhone = UserSession.getCurrentUser()
@@ -48,9 +47,10 @@ fun OrderHistoryScreen(navController: NavHostController) {
             if (currentUserPhone != null) {
                 val userOrders = repository.getUserOrders(currentUserPhone)
                 orders = userOrders
-                Log.d("OrderHistory", "Found ${userOrders.size} orders")
+                Log.d("OrderHistory", "Found ${userOrders.size} orders for user: $currentUserPhone")
             } else {
                 errorMessage = "No user logged in"
+                Log.d("OrderHistory", "No user session found")
             }
         } catch (e: Exception) {
             Log.e("OrderHistory", "Error loading orders", e)
@@ -59,6 +59,7 @@ fun OrderHistoryScreen(navController: NavHostController) {
             isLoading = false
         }
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -106,10 +107,7 @@ fun OrderHistoryScreen(navController: NavHostController) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        "❌",
-                        fontSize = 64.sp
-                    )
+                    Text("❌", fontSize = 64.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         "Error",
@@ -124,6 +122,13 @@ fun OrderHistoryScreen(navController: NavHostController) {
                         color = Color.Red,
                         textAlign = TextAlign.Center
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = { navController.navigate("login") },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                    ) {
+                        Text("Go to Login", color = Color.White)
+                    }
                 }
             }
         } else if (orders.isEmpty()) {
@@ -137,10 +142,7 @@ fun OrderHistoryScreen(navController: NavHostController) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        "📦",
-                        fontSize = 64.sp
-                    )
+                    Text("📦", fontSize = 64.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         "No orders yet",
@@ -184,36 +186,27 @@ fun OrderSummaryCard(order: Order) {
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // Order Header with Store Info
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Store Icon
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
                             .size(40.dp)
                             .background(Color.Red.copy(alpha = 0.1f), RoundedCornerShape(8.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            "🍦",
-                            fontSize = 20.sp
-                        )
+                        Text("🍦", fontSize = 20.sp)
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))
 
                     Column {
                         Text(
-                            "MIXUE ${order.deliveryAddress.take(15)}...",
+                            "MIXUE ${(order.deliveryAddress ?: "").take(15)}...",
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
                             color = Color.Black
@@ -225,15 +218,13 @@ fun OrderSummaryCard(order: Order) {
                         )
                     }
                 }
-
-                StatusBadge(status = order.status)
+                StatusBadge(status = order.status ?: "Unknown")
             }
 
             Spacer(modifier = Modifier.height(16.dp))
             Divider(color = Color.Gray.copy(alpha = 0.3f))
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Order Items Summary
             Text(
                 "📋 Order Items",
                 fontWeight = FontWeight.Bold,
@@ -242,7 +233,6 @@ fun OrderSummaryCard(order: Order) {
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            // Show all items
             order.items.forEach { item ->
                 OrderItemRow(orderItem = item)
                 Spacer(modifier = Modifier.height(8.dp))
@@ -252,10 +242,8 @@ fun OrderSummaryCard(order: Order) {
             Divider(color = Color.Gray.copy(alpha = 0.3f))
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Price Breakdown - Expandable
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -290,7 +278,6 @@ fun OrderSummaryCard(order: Order) {
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // Total Amount
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -312,7 +299,6 @@ fun OrderSummaryCard(order: Order) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Order Details
             Column {
                 Text(
                     "📋 Order Details",
@@ -322,49 +308,40 @@ fun OrderSummaryCard(order: Order) {
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                OrderDetailRow("📱 Phone", order.phoneNumber)
-                OrderDetailRow("📍 Address", order.deliveryAddress)
-                OrderDetailRow("💳 Payment", order.paymentMethod.uppercase())
-                if (order.comment.isNotEmpty()) {
+                OrderDetailRow("📱 Phone", order.phoneNumber ?: "N/A")
+                OrderDetailRow("📍 Address", order.deliveryAddress ?: "N/A")
+                OrderDetailRow("💳 Payment", order.paymentMethod?.uppercase() ?: "UNKNOWN")
+                if (!order.comment.isNullOrEmpty()) {
                     OrderDetailRow("💬 Comment", order.comment)
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Action Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedButton(
-                    onClick = { /* TODO: Implement reorder */ },
+                    onClick = { /* TODO */ },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.Red
-                    ),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text("REORDER", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
-
                 OutlinedButton(
-                    onClick = { /* TODO: Implement help */ },
+                    onClick = { /* TODO */ },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.Gray
-                    ),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Gray),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text("HELP", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
-
                 Button(
-                    onClick = { /* TODO: Implement rate */ },
+                    onClick = { /* TODO */ },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Red
-                    ),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text("RATE", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
@@ -380,22 +357,32 @@ fun OrderItemRow(orderItem: OrderItem) {
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Item Image
-        Image(
-            painter = painterResource(id = orderItem.imageResId),
-            contentDescription = orderItem.name,
-            modifier = Modifier
-                .size(50.dp)
-                .clip(RoundedCornerShape(8.dp)),
-            contentScale = ContentScale.Crop
-        )
+        if (orderItem.imageResId != 0) {
+            Image(
+                painter = painterResource(id = orderItem.imageResId),
+                contentDescription = orderItem.name ?: "",
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.Gray.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("?", color = Color.Gray)
+            }
+        }
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        // Item Details
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                orderItem.name,
+                orderItem.name ?: "Unknown Item",
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp,
                 color = Color.Black
@@ -407,7 +394,6 @@ fun OrderItemRow(orderItem: OrderItem) {
             )
         }
 
-        // Item Price
         Text(
             "RM ${"%.2f".format(orderItem.price * orderItem.quantity)}",
             fontWeight = FontWeight.Bold,
@@ -425,13 +411,9 @@ fun PriceDetailRow(label: String, amount: Double, isDiscount: Boolean = false) {
             .padding(vertical = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        Text(label, fontSize = 14.sp, color = Color.Gray)
         Text(
-            label,
-            fontSize = 14.sp,
-            color = Color.Gray
-        )
-        Text(
-            "RM ${"%.2f".format(if (isDiscount) amount else amount)}",
+            "RM ${"%.2f".format(amount)}",
             fontSize = 14.sp,
             color = if (isDiscount) Color.Green else Color.Gray,
             fontWeight = FontWeight.Medium
@@ -469,29 +451,26 @@ fun StatusBadge(status: String) {
         "Delivered" -> Color(0xFFD4EDDA)
         else -> Color.LightGray
     }
-
     val textColor = when (status) {
         "Preparing" -> Color(0xFF856404)
         "On the way" -> Color(0xFF0C5460)
         "Delivered" -> Color(0xFF155724)
         else -> Color.DarkGray
     }
-
     Box(
         modifier = Modifier
             .background(backgroundColor, RoundedCornerShape(20.dp))
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
-        Text(
-            text = status,
-            color = textColor,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Text(text = status, color = textColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
     }
 }
 
 fun formatDate(timestamp: Long): String {
-    val sdf = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-    return sdf.format(Date(timestamp))
+    return try {
+        val sdf = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+        sdf.format(Date(timestamp))
+    } catch (e: Exception) {
+        "Unknown Date"
+    }
 }
