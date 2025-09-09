@@ -1,52 +1,74 @@
+// OrderRepository.kt
 package com.example.myapplication.orderData
 
 import android.content.Context
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import android.util.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class OrderRepository(private val context: Context) {
-    private val sharedPreferences = context.getSharedPreferences("orders", Context.MODE_PRIVATE)
-    private val gson = Gson()
+    private val database = OrderDatabase.getDatabase(context) // Changed to OrderDatabase
+    private val orderDao = database.orderDao()
 
-    fun saveOrder(order: Order) {
-        val orders = getAllOrders().toMutableList()
-        val existingIndex = orders.indexOfFirst { it.orderId == order.orderId }
-        if (existingIndex != -1) {
-            orders[existingIndex] = order
-        } else {
-            orders.add(order)
-        }
-        saveOrdersToStorage(orders)
-    }
-
-    fun getAllOrders(): List<Order> {
-        val json = sharedPreferences.getString("orders_list", null) ?: return emptyList()
-        val type = object : TypeToken<List<Order>>() {}.type
-        return gson.fromJson(json, type)
-    }
-
-    fun getUserOrders(phoneNumber: String): List<Order> {
-        return getAllOrders().filter { it.phoneNumber == phoneNumber }
-    }
-
-    fun getOrderById(orderId: String): Order? {
-        return getAllOrders().find { it.orderId == orderId }
-    }
-
-    fun updateOrderStatus(orderId: String, newStatus: String) {
-        val orders = getAllOrders().toMutableList()
-        val index = orders.indexOfFirst { it.orderId == orderId }
-        if (index != -1) {
-            val updatedOrder = orders[index].copy(status = newStatus)
-            orders[index] = updatedOrder
-            saveOrdersToStorage(orders)
+    suspend fun saveOrder(order: Order) {
+        withContext(Dispatchers.IO) {
+            try {
+                orderDao.insertOrder(order)
+                Log.d("OrderRepository", "Order saved: ${order.orderId} for user: ${order.userPhoneNumber}")
+            } catch (e: Exception) {
+                Log.e("OrderRepository", "Error saving order", e)
+                throw e
+            }
         }
     }
 
-    private fun saveOrdersToStorage(orders: List<Order>) {
-        val editor = sharedPreferences.edit()
-        val json = gson.toJson(orders)
-        editor.putString("orders_list", json)
-        editor.apply()
+    suspend fun getUserOrders(userPhoneNumber: String): List<Order> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val orders = orderDao.getOrdersByUser(userPhoneNumber)
+                Log.d("OrderRepository", "Retrieved ${orders.size} orders for user: $userPhoneNumber")
+                orders
+            } catch (e: Exception) {
+                Log.e("OrderRepository", "Error getting user orders", e)
+                emptyList()
+            }
+        }
+    }
+
+    suspend fun getOrderById(orderId: String): Order? {
+        return withContext(Dispatchers.IO) {
+            try {
+                orderDao.getOrderById(orderId)
+            } catch (e: Exception) {
+                Log.e("OrderRepository", "Error getting order by ID", e)
+                null
+            }
+        }
+    }
+
+    suspend fun updateOrderStatus(orderId: String, newStatus: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                val order = orderDao.getOrderById(orderId)
+                order?.let {
+                    val updatedOrder = it.copy(status = newStatus)
+                    orderDao.updateOrder(updatedOrder)
+                    Log.d("OrderRepository", "Order status updated: $orderId -> $newStatus")
+                }
+            } catch (e: Exception) {
+                Log.e("OrderRepository", "Error updating order status", e)
+            }
+        }
+    }
+
+    suspend fun getAllOrders(): List<Order> {
+        return withContext(Dispatchers.IO) {
+            try {
+                orderDao.getAllOrders()
+            } catch (e: Exception) {
+                Log.e("OrderRepository", "Error getting all orders", e)
+                emptyList()
+            }
+        }
     }
 }

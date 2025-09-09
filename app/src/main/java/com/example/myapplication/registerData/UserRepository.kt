@@ -1,38 +1,79 @@
 package com.example.myapplication.registerData
 
-class UserRepository(private val userDao: UserDao) {
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
-    suspend fun insertUser(user: User) {
-        userDao.insertUser(user)
+class UserRepository {
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val usersCollection = db.collection("users")
+
+    suspend fun updateUserName(userId: String, name: String) {
+        usersCollection.document(userId).update("name", name).await()
+    }
+
+    suspend fun updateUserGender(userId: String, gender: String) {
+        usersCollection.document(userId).update("gender", gender).await()
+    }
+
+    suspend fun updateUserProfilePicture(userId: String, profilePicturePath: String?) {
+        usersCollection.document(userId).update("profilePicturePath", profilePicturePath).await()
+    }
+
+    suspend fun insertUser(user: User): String {
+        val documentRef = usersCollection.document() // Auto-generate ID
+        val userWithId = user.copy(id = documentRef.id)
+
+        documentRef.set(userWithId.toMap()).await()
+        return documentRef.id
     }
 
     suspend fun updateUser(user: User) {
-        userDao.updateUser(user)
+        require(user.id.isNotEmpty()) { "User must have an ID to update" }
+        usersCollection.document(user.id).update(user.toMap()).await()
     }
 
     suspend fun getUserByCredentials(phoneNumber: String, password: String): User? {
-        return userDao.getUserByCredentials(phoneNumber, password)
+        val query = usersCollection
+            .whereEqualTo("phoneNumber", phoneNumber)
+            .whereEqualTo("password", password)
+            .limit(1)
+            .get()
+            .await()
+
+        return if (!query.isEmpty) {
+            val document = query.documents[0]
+            User.fromMap(document.data!!)
+        } else {
+            null
+        }
     }
 
     suspend fun checkIfUserExists(phoneNumber: String): User? {
-        return userDao.getUserByPhoneNumber(phoneNumber)
+        val query = usersCollection
+            .whereEqualTo("phoneNumber", phoneNumber)
+            .limit(1)
+            .get()
+            .await()
+
+        return if (!query.isEmpty) {
+            val document = query.documents[0]
+            User.fromMap(document.data!!)
+        } else {
+            null
+        }
     }
 
-    suspend fun getUserById(userId: Int): User? {
-        return userDao.getUserById(userId)
+    suspend fun getUserById(userId: String): User? {
+        return try {
+            val document = usersCollection.document(userId).get().await()
+            if (document.exists()) {
+                User.fromMap(document.data!!)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
-
-    suspend fun updateUserName(userId: Int, name: String) {
-        userDao.updateUserName(userId, name)
-    }
-
-    suspend fun updateUserGender(userId: Int, gender: String) {
-        userDao.updateUserGender(userId, gender)
-    }
-
-    suspend fun updateUserProfilePicture(userId: Int, profilePicturePath: String?) {
-        userDao.updateUserProfilePicture(userId, profilePicturePath)
-    }
-
 
 }

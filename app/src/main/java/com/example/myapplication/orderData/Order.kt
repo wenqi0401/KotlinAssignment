@@ -1,3 +1,4 @@
+// Order.kt
 package com.example.myapplication.orderData
 
 import androidx.room.Entity
@@ -10,8 +11,7 @@ import com.google.gson.reflect.TypeToken
 @Entity(tableName = "orders")
 @TypeConverters(OrderConverters::class)
 data class Order(
-    @PrimaryKey
-    val orderId: String,
+    @PrimaryKey val orderId: String,
     val userPhoneNumber: String,
     val items: List<OrderItem>,
     val subtotal: Double,
@@ -28,22 +28,23 @@ data class Order(
     val status: String = "Preparing"
 )
 
+
+class OrderConverters {
+    @TypeConverter
+    fun fromOrderItemList(value: List<OrderItem>): String {
+        return Gson().toJson(value)
+    }
+
+    @TypeConverter
+    fun toOrderItemList(value: String): List<OrderItem> {
+        val type = object : TypeToken<List<OrderItem>>() {}.type
+        return Gson().fromJson(value, type) ?: emptyList()
+    }
+}
+
 data class OrderItem(
     val name: String,
     val price: Double,
     val quantity: Int,
     val imageResId: Int
 )
-
-class OrderConverters {
-    @TypeConverter
-    fun fromOrderItemList(items: List<OrderItem>): String {
-        return Gson().toJson(items)
-    }
-
-    @TypeConverter
-    fun toOrderItemList(itemsString: String): List<OrderItem> {
-        val type = object : TypeToken<List<OrderItem>>() {}.type
-        return Gson().fromJson(itemsString, type)
-    }
-}
