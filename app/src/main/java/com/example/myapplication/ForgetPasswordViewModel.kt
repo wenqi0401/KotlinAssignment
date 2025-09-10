@@ -204,7 +204,11 @@ class ForgetPasswordViewModel : ViewModel() {
 
             try {
                 val user = repository.checkIfUserExists(_uiState.value.phoneNumber)
+                Log.d("ForgetPasswordViewModel", "User found: ${user != null}")
+
                 if (user != null) {
+                    Log.d("ForgetPasswordViewModel", "About to update password for user: ${user.id}")
+
                     repository.updateUserPassword(user.id, _uiState.value.newPassword)
                     Log.d("ForgetPasswordViewModel", "Password reset successfully for user: ${user.id}")
 
@@ -212,7 +216,11 @@ class ForgetPasswordViewModel : ViewModel() {
                         isLoading = false,
                         passwordResetSuccess = true
                     )
+                    Log.d("ForgetPasswordViewModel", "passwordResetSuccess set to: ${_uiState.value.passwordResetSuccess}")
+
                 } else {
+                    Log.e("ForgetPasswordViewModel", "User not found for phone: ${_uiState.value.phoneNumber}")
+
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = "User not found"
@@ -230,5 +238,8 @@ class ForgetPasswordViewModel : ViewModel() {
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
+    }
+    fun clearSuccessState() {
+        _uiState.value = _uiState.value.copy(passwordResetSuccess = false)
     }
 }

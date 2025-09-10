@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.app.Activity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -42,8 +44,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.delay
-import androidx.compose.ui.platform.LocalContext
-import android.app.Activity
 
 
 @Composable
@@ -66,6 +66,7 @@ fun ForgetPasswordScreen(
 
     // Handle UI state changes
     LaunchedEffect(uiState.value.errorMessage, uiState.value.passwordResetSuccess) {
+
         if (uiState.value.errorMessage != null) {
             showErrorDialog = true
         }
@@ -142,36 +143,19 @@ fun ForgetPasswordScreen(
                 )
             }
 
-            // Success Dialog
+
             if (showSuccessDialog) {
-                AlertDialog(
-                    onDismissRequest = {
+                SuccessDialog(
+                    showDialog = true,
+                    onDismiss = {
                         showSuccessDialog = false
+                        viewModel.clearSuccessState()
+                    },
+                    onNavigateToLogin = {
+                        showSuccessDialog = false
+                        viewModel.clearSuccessState()
                         navController.navigate("login") {
-                            popUpTo("forget_password") { inclusive = true }
-                        }
-                    },
-                    title = {
-                        Text(
-                            "Password Reset Successful!",
-                            color = Color.Green,
-                            fontWeight = FontWeight.Bold
-                        )
-                    },
-                    text = {
-                        Text("Your password has been updated successfully. You can now login with your new password.")
-                    },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                showSuccessDialog = false
-                                navController.navigate("login") {
-                                    popUpTo("forget_password") { inclusive = true }
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
-                        ) {
-                            Text("Go to Login", color = Color.White)
+                            popUpTo("login") { inclusive = true }
                         }
                     }
                 )
@@ -371,7 +355,9 @@ fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswor
         )
 
         Button(
-            onClick = { viewModel.resetPassword() },
+            onClick = {
+                viewModel.resetPassword()
+            },
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isLoading &&
                     uiState.newPassword.length >= 8 &&
@@ -392,5 +378,48 @@ fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswor
                 Text("Reset Password", color = Color.Red, fontSize = 18.sp)
             }
         }
+
+    }
+}
+@Composable
+fun SuccessDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    onNavigateToLogin: () -> Unit
+) {
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text(
+                    text = "Password Reset Successful!",
+                    color = Color.Green,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            },
+            text = {
+                Text(
+                    text = "Your password has been updated successfully. You can now login with your new password.",
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDismiss()
+                        onNavigateToLogin()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
+                ) {
+                    Text(
+                        text = "Go to Login",
+                        color = Color.White,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            },
+        )
     }
 }
