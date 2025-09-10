@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import kotlin.collections.get
+import kotlin.text.get
 
 class UserRepository {
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -92,5 +94,22 @@ class UserRepository {
             null
         }
     }
+    suspend fun getUserByPhone(phoneNumber: String): User? {
+        return try {
+            val query = usersCollection
+                .whereEqualTo("phoneNumber", phoneNumber)
+                .limit(1)
+                .get()
+                .await()
+
+            if (!query.isEmpty) {
+                User.fromMap(query.documents[0].data!!)
+            } else null
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting user by phone: ${e.message}")
+            null
+        }
+    }
+
 
 }

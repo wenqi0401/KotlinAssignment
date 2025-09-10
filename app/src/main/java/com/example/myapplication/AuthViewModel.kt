@@ -127,6 +127,25 @@ class AuthViewModel : ViewModel() {
         _uiState.value = loginUiState()
     }
 
+    fun hydrateFromSession() {
+        viewModelScope.launch {
+            try {
+                val phone = UserSession.getCurrentUser() // implement a getter if missing
+                if (!phone.isNullOrEmpty()) {
+                    val user = repository.getUserByPhone(phone)
+                    if (user != null) {
+                        _uiState.value = _uiState.value.copy(
+                            isLoggedIn = true,
+                            currentUser = user
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("AuthViewModel", "hydrateFromSession failed", e)
+            }
+        }
+    }
+
     fun updateUserName(newName: String) {
         viewModelScope.launch {
             try {

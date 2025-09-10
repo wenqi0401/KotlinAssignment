@@ -1,7 +1,6 @@
 package com.example.myapplication
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -40,6 +38,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,12 +47,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -74,6 +71,11 @@ fun UserProfileScreen(
     var showNameDialog by remember { mutableStateOf(false) }
     var showGenderDialog by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        if (!authViewModel.isUserLoggedIn()) {
+            authViewModel.hydrateFromSession()
+        }
+    }
     // Gallery launcher for profile picture
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -155,7 +157,7 @@ fun UserProfileScreen(
                     // Phone Row (not editable)
                     ProfileInfoRow(
                         label = "Phone",
-                        value = uiState.currentUser?.phoneNumber ?: "",
+                        value = uiState.currentUser?.phoneNumber?: "N/A",
                         onClick = { /* Not editable */ },
                         showArrow = false
                     )
@@ -194,10 +196,7 @@ fun UserProfileScreen(
         EditNameDialog(
             currentName = uiState.currentUser?.name ?: "",
             onDismiss = { showNameDialog = false },
-            onConfirm = { newName ->
-                authViewModel.updateUserName(newName)
-                showNameDialog = false
-            }
+            viewModel = authViewModel
         )
     }
 
@@ -205,10 +204,7 @@ fun UserProfileScreen(
         GenderSelectionDialog(
             currentGender = uiState.currentUser?.gender ?: "Male",
             onDismiss = { showGenderDialog = false },
-            onGenderSelected = { selectedGender ->
-                authViewModel.updateUserGender(selectedGender)
-                showGenderDialog = false
-            }
+            authViewModel = authViewModel
         )
     }
 }
@@ -307,10 +303,10 @@ private fun ProfileInfoRow(
 fun EditNameDialog(
     currentName: String,
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
+    viewModel: AuthViewModel = viewModel(),
 ) {
     var name by remember { mutableStateOf(currentName) }
-
+val uiState by viewModel.uiState.collectAsState()
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Edit Name") },
@@ -326,7 +322,7 @@ fun EditNameDialog(
             Button(
                 onClick = {
                     if (name.isNotBlank()) {
-                        onConfirm(name.trim())
+                        viewModel.updateUserName(name)
                     }
                 },
                 enabled = name.isNotBlank()
@@ -346,10 +342,11 @@ fun EditNameDialog(
 fun GenderSelectionDialog(
     currentGender: String,
     onDismiss: () -> Unit,
-    onGenderSelected: (String) -> Unit
+    authViewModel: AuthViewModel = viewModel()
 ) {
     var selectedGender by remember { mutableStateOf(currentGender) }
 
+    val uiState by authViewModel.uiState.collectAsState()
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Select Gender") },
@@ -377,7 +374,7 @@ fun GenderSelectionDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onGenderSelected(selectedGender) }
+                onClick = { authViewModel.updateUserGender(selectedGender) }
             ) {
                 Text("Save")
             }
