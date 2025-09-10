@@ -77,7 +77,7 @@ fun LoginScreen(
             Image(
                 painter = painterResource(id = R.drawable.logomixue),
                 contentDescription = "Logo",
-                modifier = Modifier.size(300.dp),
+                modifier = Modifier.size(200.dp),
                 contentScale = ContentScale.Crop
             )
 
@@ -122,7 +122,7 @@ fun LoginScreen(
 
 
             Button(
-                onClick = { viewModel.loginUser() }, // Use database login
+                onClick = { viewModel.loginUser() },
                 modifier = Modifier.fillMaxWidth(),
                 // Enable button only when not loading and fields are not empty(optional)
                 enabled = !uiState.value.isLoading &&
@@ -170,7 +170,7 @@ fun LoginScreen(
                 Text("Register", fontSize = 16.sp, color = Color.Gray)
             }
 
-            TextButton(onClick = { /* TODO */ }) {
+            TextButton(onClick = { navController.navigate("forget_password") }) {
                 Text("Forgot Password?", fontSize = 16.sp, color = Color.Gray)
             }
         }

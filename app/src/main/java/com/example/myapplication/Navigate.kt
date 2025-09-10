@@ -10,10 +10,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.orderData.OrderRepository
 
 @Composable
@@ -156,6 +156,9 @@ fun MyApp() {
             // Admin Points Management (Optional - if you want admins to manage user points)
             composable("admin_points_management") {
                 AdminPointsManagementScreen(navController = navController)
+            }
+            composable ("forget_password") {
+                ForgetPasswordScreen(navController = navController)
             }
         }
     }

@@ -7,6 +7,7 @@ import com.example.myapplication.orderData.UserSession
 import com.example.myapplication.registerData.User
 import com.example.myapplication.registerData.UserRepository
 import com.example.myapplication.registerData.loginUiState
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

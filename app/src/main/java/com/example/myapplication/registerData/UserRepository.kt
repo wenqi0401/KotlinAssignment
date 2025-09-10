@@ -50,6 +50,10 @@ class UserRepository {
         }
     }
 
+    suspend fun updateUserPassword(userId: String, newPassword: String) {
+        usersCollection.document(userId).update("password", newPassword).await()
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun checkIfUserExists(phoneNumber: String): User? {
         val query = usersCollection
