@@ -12,20 +12,33 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.myapplication.orderData.UserSession
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VoucherCenterScreen(navController: NavHostController) {
     val currentUser = UserSession.getCurrentUser()
-    val userVouchers = if (currentUser != null) VoucherManager.getUserVouchers(currentUser) else emptyList()
+    val context = LocalContext.current
+    val voucherManager = remember { VoucherManager.getInstance(context) }
+    val coroutineScope = rememberCoroutineScope()
+
     var voucherCode by remember { mutableStateOf("") }
     var showMessage by remember { mutableStateOf("") }
+    var userVouchers by remember { mutableStateOf<List<Pair<com.example.myapplication.voucher.UserVoucherEntity, com.example.myapplication.voucher.VoucherEntity>>>(emptyList()) }
+
+    // 初始化加载用户的 vouchers
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            userVouchers = voucherManager.getUserVouchers(currentUser)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -75,12 +88,15 @@ fun VoucherCenterScreen(navController: NavHostController) {
                         Button(
                             onClick = {
                                 if (currentUser != null && voucherCode.isNotEmpty()) {
-                                    val success = VoucherManager.redeemVoucher(currentUser, voucherCode)
-                                    showMessage = if (success) {
-                                        voucherCode = ""
-                                        "Voucher redeemed successfully!"
-                                    } else {
-                                        "Invalid or expired voucher code"
+                                    coroutineScope.launch {
+                                        val success = voucherManager.redeemVoucher(currentUser, voucherCode)
+                                        if (success) {
+                                            voucherCode = ""
+                                            showMessage = "Voucher redeemed successfully!"
+                                            userVouchers = voucherManager.getUserVouchers(currentUser) // 刷新列表
+                                        } else {
+                                            showMessage = "Invalid or expired voucher code"
+                                        }
                                     }
                                 }
                             },
@@ -112,9 +128,12 @@ fun VoucherCenterScreen(navController: NavHostController) {
             }
 
             // User's vouchers
-            items(userVouchers) { (userVoucher, voucher) ->
+            // User's vouchers
+            items(userVouchers) { pair ->
+                val (_, voucher) = pair
                 VoucherCard(voucher = voucher)
             }
+
 
             if (userVouchers.isEmpty()) {
                 item {

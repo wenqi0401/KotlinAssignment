@@ -83,25 +83,7 @@ fun AdminDashboardScreen(navController: NavController) {
                 )
             }
 
-            // point
-            ElevatedButton(
-                onClick = { navController.navigate("admin_points_management") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp),
-                colors = ButtonDefaults.elevatedButtonColors(
-                    containerColor = Color(0xFFFF9800)
-                )
-            ) {
-                Text("⭐", fontSize = 24.sp)
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    "Manage Points",
-                    fontSize = 18.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.Medium
-                )
-            }
+            Spacer(modifier = Modifier.height(60.dp))
 
             // 登出按钮
             OutlinedButton(
