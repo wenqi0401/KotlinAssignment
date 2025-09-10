@@ -1,6 +1,7 @@
 package com.example.myapplication.registerData
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -8,6 +9,9 @@ import kotlinx.coroutines.tasks.await
 class UserRepository {
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val usersCollection = db.collection("users")
+    private val TAG = "UserRepository"
+
+
 
     suspend fun updateUserName(userId: String, name: String) {
         usersCollection.document(userId).update("name", name).await()
@@ -20,32 +24,38 @@ class UserRepository {
     suspend fun updateUserProfilePicture(userId: String, profilePicturePath: String?) {
         usersCollection.document(userId).update("profilePicturePath", profilePicturePath).await()
     }
-
     suspend fun insertUser(user: User): String {
-        val documentRef = usersCollection.document() // Auto-generate ID
-        val userWithId = user.copy(id = documentRef.id)
-
-        documentRef.set(userWithId.toMap()).await()
-        return documentRef.id
-    }
-
-    suspend fun updateUser(user: User) {
-        require(user.id.isNotEmpty()) { "User must have an ID to update" }
-        usersCollection.document(user.id).update(user.toMap()).await()
+        return try {
+            val documentRef = usersCollection.document()
+            val userWithId = user.copy(id = documentRef.id)
+            documentRef.set(userWithId.toMap()).await()
+            Log.d(TAG, "User inserted successfully with ID: ${documentRef.id}")
+            documentRef.id
+        } catch (e: Exception) {
+            Log.e(TAG, "Error inserting user: ${e.message}")
+            throw e
+        }
     }
 
     suspend fun getUserByCredentials(phoneNumber: String, password: String): User? {
-        val query = usersCollection
-            .whereEqualTo("phoneNumber", phoneNumber)
-            .whereEqualTo("password", password)
-            .limit(1)
-            .get()
-            .await()
+        return try {
+            val query = usersCollection
+                .whereEqualTo("phoneNumber", phoneNumber)
+                .whereEqualTo("password", password)
+                .limit(1)
+                .get()
+                .await()
 
-        return if (!query.isEmpty) {
-            val document = query.documents[0]
-            User.fromMap(document.data!!)
-        } else {
+            if (!query.isEmpty) {
+                val document = query.documents[0]
+                Log.d(TAG, "User found with credentials: $phoneNumber")
+                User.fromMap(document.data!!)
+            } else {
+                Log.d(TAG, "No user found with credentials: $phoneNumber")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting user by credentials: ${e.message}")
             null
         }
     }
