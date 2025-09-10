@@ -50,7 +50,9 @@ class AuthViewModel : ViewModel() {
                 Log.d("AuthViewModel", "User registered successfully with ID: $userId")
 
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
+                    isLoading = true,
+                    isLoggedIn = true,
+                    errorMessage = null,
                     currentUser = newUser.copy(id = userId)
                 )
 

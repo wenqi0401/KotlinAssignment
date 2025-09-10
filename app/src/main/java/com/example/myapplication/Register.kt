@@ -60,7 +60,7 @@ fun Register(
                 // Show error dialog if there's an error
                 showErrorDialog = true
             } else {
-                // Show success dialog - DON'T navigate yet
+                // Show success dialog
                 showSuccessDialog = true
             }
             registrationAttempted = false
@@ -166,6 +166,7 @@ fun Register(
                     } else {
                         registrationAttempted = true
                         viewModel.registerUser()
+                        showSuccessDialog=true
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -174,11 +175,13 @@ fun Register(
                     containerColor = if (!uiState.value.isLoading && viewModel.isRegisterFormValid(confirmPassword)) Color.White else Color.Gray
                 )
             ) {
+
                 if (uiState.value.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
                         color = Color.Red
                     )
+
                 } else {
                     Text("Register", color = Color.Red, fontSize = 30.sp)
                 }
@@ -195,7 +198,6 @@ fun Register(
                 )
             }
 
-            // Success dialog - Navigation happens ONLY when user clicks OK
             if (showSuccessDialog) {
                 RegisterSuccessDialog(
                     onDismiss = {
