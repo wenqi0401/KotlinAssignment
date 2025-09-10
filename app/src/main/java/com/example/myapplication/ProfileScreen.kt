@@ -54,8 +54,10 @@ fun ProfileScreen(
     val uiState = viewModel.uiState.collectAsState()
     val currentUser = uiState.value.currentUser
 
+
     // Refresh user data when screen loads
     LaunchedEffect(Unit) {
+        viewModel.hydrateFromSession()
         viewModel.refreshUserData()
     }
 

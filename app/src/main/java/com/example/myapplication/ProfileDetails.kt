@@ -323,6 +323,7 @@ val uiState by viewModel.uiState.collectAsState()
                 onClick = {
                     if (name.isNotBlank()) {
                         viewModel.updateUserName(name)
+                        onDismiss()
                     }
                 },
                 enabled = name.isNotBlank()
@@ -374,7 +375,8 @@ fun GenderSelectionDialog(
         },
         confirmButton = {
             Button(
-                onClick = { authViewModel.updateUserGender(selectedGender) }
+                onClick = { authViewModel.updateUserGender(selectedGender)
+                onDismiss() },
             ) {
                 Text("Save")
             }
