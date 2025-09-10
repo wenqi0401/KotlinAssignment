@@ -41,7 +41,8 @@ fun MyApp() {
                     "admin_login",
                     "admin_dashboard",
                     "admin_order_management",
-                    "admin_order_detail/{orderId}"
+                    "admin_order_detail/{orderId}",
+                    "forget_password"
 
                 )
             ) {
