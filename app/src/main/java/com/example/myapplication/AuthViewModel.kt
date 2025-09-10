@@ -7,7 +7,6 @@ import com.example.myapplication.orderData.UserSession
 import com.example.myapplication.registerData.User
 import com.example.myapplication.registerData.UserRepository
 import com.example.myapplication.registerData.loginUiState
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,47 +24,41 @@ class AuthViewModel : ViewModel() {
     fun setPassword(password: String) {
         _uiState.value = _uiState.value.copy(password = password)
     }
-
     fun registerUser() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
-
             try {
-                // Check if user already exists in Firebase
                 val existingUser = repository.checkIfUserExists(_uiState.value.phoneNumber)
                 if (existingUser != null) {
                     _uiState.value = _uiState.value.copy(
-                        isLoading = false,
                         errorMessage = "Phone number already registered"
                     )
                     return@launch
                 }
 
-                // Create new user in Firebase
                 val newUser = User(
                     phoneNumber = _uiState.value.phoneNumber,
                     password = _uiState.value.password
                 )
-
                 val userId = repository.insertUser(newUser)
-                Log.d("AuthViewModel", "User registered successfully with ID: $userId")
+                val savedUser = newUser.copy(id = userId)
 
+                UserSession.setCurrentUser(savedUser.phoneNumber)
                 _uiState.value = _uiState.value.copy(
-                    isLoading = true,
                     isLoggedIn = true,
-                    errorMessage = null,
-                    currentUser = newUser.copy(id = userId)
+                    currentUser = savedUser,
+                    errorMessage = null
                 )
-
             } catch (e: Exception) {
-                Log.e("AuthViewModel", "Registration failed", e)
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
                     errorMessage = "Registration failed: ${e.message}"
                 )
+            } finally {
+                _uiState.value = _uiState.value.copy(isLoading = false)
             }
         }
     }
+
 
     fun loginUser() {
         viewModelScope.launch {
@@ -166,13 +159,8 @@ class AuthViewModel : ViewModel() {
             try {
                 val currentUser = _uiState.value.currentUser
                 if (currentUser != null && currentUser.id.isNotEmpty()) {
-                    // Clear any existing errors
-                    _uiState.value = _uiState.value.copy(errorMessage = null)
-
+                    _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
                     repository.updateUserGender(currentUser.id, newGender)
-                    Log.d("AuthViewModel", "Gender updated successfully to: $newGender")
-
-                    // Update local state
                     _uiState.value = _uiState.value.copy(
                         currentUser = currentUser.copy(gender = newGender)
                     )
@@ -180,10 +168,11 @@ class AuthViewModel : ViewModel() {
                     Log.e("AuthViewModel", "Cannot update gender: User not logged in")
                 }
             } catch (e: Exception) {
-                Log.e("AuthViewModel", "Failed to update gender", e)
                 _uiState.value = _uiState.value.copy(
                     errorMessage = "Failed to update gender: ${e.message}"
                 )
+            } finally {
+                _uiState.value = _uiState.value.copy(isLoading = false)
             }
         }
     }

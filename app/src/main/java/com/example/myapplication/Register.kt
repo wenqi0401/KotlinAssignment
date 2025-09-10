@@ -55,17 +55,20 @@ fun Register(
 
     // Handle registration result - ONLY show dialogs, no navigation here
     LaunchedEffect(uiState.value.errorMessage, uiState.value.isLoading, registrationAttempted) {
-        if (registrationAttempted && !uiState.value.isLoading) {
-            if (uiState.value.errorMessage != null) {
-                // Show error dialog if there's an error
-                showErrorDialog = true
-            } else {
-                // Show success dialog
-                showSuccessDialog = true
+        if (registrationAttempted) {
+            if (!uiState.value.isLoading) {
+                // Registration completed - check result
+                if (uiState.value.errorMessage != null) {
+                    showErrorDialog = true
+                } else {
+                    showSuccessDialog = true
+                }
+                registrationAttempted = false // Reset flag only after handling result
             }
-            registrationAttempted = false
+            // If still loading, do nothing - wait for next trigger
         }
     }
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -161,12 +164,13 @@ fun Register(
             Button(
                 onClick = {
                     val confirmPasswordError = viewModel.validateConfirmPassword(confirmPassword)
-                    if (confirmPasswordError != null) {
+
+                    if(confirmPasswordError != null) {
                         showErrorDialog = true
+                        showSuccessDialog = false
                     } else {
-                        registrationAttempted = true
                         viewModel.registerUser()
-                        showSuccessDialog=true
+                        registrationAttempted = true
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
