@@ -338,28 +338,12 @@ fun LoginSuccessScreen(navController: NavHostController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo 容器
-            Card(
-                modifier = Modifier
-                    .size(150.dp)
-                    .clip(RoundedCornerShape(20.dp)),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White.copy(alpha = 0.95f)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 16.dp)
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.logomixue),
-                        contentDescription = null,
-                        modifier = Modifier.size(100.dp),
-                        contentScale = ContentScale.Fit
-                    )
-                }
-            }
+            Image(
+                painter = painterResource(id = R.drawable.logomixue),
+                contentDescription = null,
+                modifier = Modifier.size(360.dp),
+                contentScale = ContentScale.Fit
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
