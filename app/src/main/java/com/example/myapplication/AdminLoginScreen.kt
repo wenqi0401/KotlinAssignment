@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -48,7 +49,7 @@ fun AdminLoginScreen(navController: NavHostController) {
                         text = "Admin Portal",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2196F3)
+                        color = Color.Red
                     )
 
                     OutlinedTextField(

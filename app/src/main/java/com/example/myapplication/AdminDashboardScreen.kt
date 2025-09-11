@@ -15,11 +15,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.admin.AdminTopBar
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 
 @Composable
 fun AdminDashboardScreen(navController: NavController) {
     Scaffold(
-        topBar = { AdminTopBar("Admin Dashboard") }
+
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -29,11 +32,20 @@ fun AdminDashboardScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Image(
+                painter = painterResource(id = R.drawable.admin),
+                contentDescription = "Admin Avatar",
+                modifier = Modifier
+                    .size(200.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+
             Text(
                 text = "Welcome, Admin",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF2196F3)
+                color = Color.Red
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -99,7 +111,7 @@ fun AdminDashboardScreen(navController: NavController) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(240.dp))
+            Spacer(modifier = Modifier.height(80.dp))
 
             OutlinedButton(
                 onClick = {

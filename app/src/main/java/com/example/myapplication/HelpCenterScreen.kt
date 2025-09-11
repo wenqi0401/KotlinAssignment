@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
+import androidx.compose.material3.Button
 
 // Sample data with questions and answers
 data class FaqItem(val question: String, val answer: String)

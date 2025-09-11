@@ -218,8 +218,12 @@ fun OrderHistoryScreen(navController: NavHostController) {
                         onRateClick = { orderToRate ->
                             currentOrderForRating = orderToRate
                             showRatingDialog = true
-                        }
+                        } ,
+
+                        navController = navController
                     )
+
+
                 }
             }
         }
@@ -229,7 +233,9 @@ fun OrderHistoryScreen(navController: NavHostController) {
 @Composable
 fun OrderSummaryCard(
     order: Order,
-    onRateClick: (Order) -> Unit
+    onRateClick: (Order) -> Unit,
+    navController: NavHostController
+
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -238,6 +244,7 @@ fun OrderSummaryCard(
         elevation = CardDefaults.cardElevation(6.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
+
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -376,7 +383,7 @@ fun OrderSummaryCard(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedButton(
-                    onClick = { /* TODO */ },
+                    onClick = { navController.navigate("help") },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Gray),
                     shape = RoundedCornerShape(8.dp)
