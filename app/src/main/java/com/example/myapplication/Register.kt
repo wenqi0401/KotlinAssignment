@@ -1,22 +1,36 @@
 package com.example.myapplication
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -26,14 +40,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,129 +84,217 @@ fun Register(
         }
     }
 
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        containerColor = Color.Red
-    ) { paddingValues ->
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // 渐变背景 - 和登录页面一致
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFFDC143C),  // 深红色
+                            Color(0xFFFF1744),  // 鲜红色
+                            Color(0xFFE53935)   // 偏橙红色
+                        )
+                    )
+                )
+        )
 
         Column(
-            modifier = Modifier.padding(paddingValues),
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.Center
         ) {
             Image(
                 painter = painterResource(id = R.drawable.logomixue),
                 contentDescription = "Logo",
-                modifier = Modifier.size(300.dp),
-                contentScale = ContentScale.Crop
+                modifier = Modifier.size(240.dp),
+                contentScale = ContentScale.Fit
+            )
+
+
+            // 标题文本
+            Text(
+                text = "Create Account",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Center
             )
 
             Text(
-                text = "Register Account",
-                fontStyle = FontStyle.Italic,
-                fontFamily = FontFamily.Serif,
-                fontSize = 40.sp,
-                color = Color.White
+                text = "Join us today",
+                fontSize = 16.sp,
+                color = Color.White.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center
             )
 
-            // Phone Number Field
-            TextField(
-                value = uiState.value.phoneNumber,
-                onValueChange = { viewModel.setPhoneNumber(it) },
-                label = { Text("Phone Number") },
-                placeholder = { Text("e.g., 0123456789") },
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // 注册卡片
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.value.isLoading,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Red,
-                    unfocusedIndicatorColor = Color.Gray,
-                    focusedLabelColor = Color.Red,
-                    cursorColor = Color.Red
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White.copy(alpha = 0.95f)
                 ),
-                supportingText = {
-                    Text(
-                        text = "10-15 digits, numbers only",
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 12.sp
-                    )
-                }
-            )
-
-            // Password Field
-            TextField(
-                value = uiState.value.password,
-                onValueChange = { viewModel.setPassword(it) },
-                label = { Text("Create a Password") },
-                placeholder = { Text("Min 8 chars, letters & numbers") },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.value.isLoading,
-                visualTransformation = PasswordVisualTransformation(),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Red,
-                    unfocusedIndicatorColor = Color.Gray,
-                    focusedLabelColor = Color.Red,
-                    cursorColor = Color.Red
-                ),
-                supportingText = {
-                    Text(
-                        text = "At least 8 characters, must contain letters and numbers",
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 12.sp
-                    )
-                }
-            )
-
-            // Confirm Password Field
-            TextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                label = { Text("Confirm Password") },
-                placeholder = { Text("Re-enter your password") },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.value.isLoading,
-                visualTransformation = PasswordVisualTransformation(),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Red,
-                    unfocusedIndicatorColor = Color.Gray,
-                    focusedLabelColor = Color.Red,
-                    cursorColor = Color.Red
-                )
-            )
-
-            // Register Button
-            Button(
-                onClick = {
-                    val confirmPasswordError = viewModel.validateConfirmPassword(confirmPassword)
-
-                    if(confirmPasswordError != null) {
-                        showErrorDialog = true
-                        showSuccessDialog = false
-                    } else {
-                        viewModel.registerUser()
-                        registrationAttempted = true
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.value.isLoading && viewModel.isRegisterFormValid(confirmPassword),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (!uiState.value.isLoading && viewModel.isRegisterFormValid(confirmPassword)) Color.White else Color.Gray
-                )
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+                shape = RoundedCornerShape(24.dp)
             ) {
-
-                if (uiState.value.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        color = Color.Red
+                Column(
+                    modifier = Modifier.padding(32.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    // 手机号输入框
+                    OutlinedTextField(
+                        value = uiState.value.phoneNumber,
+                        onValueChange = { viewModel.setPhoneNumber(it) },
+                        label = { Text("Phone Number") },
+                        placeholder = { Text("e.g., 0123456789") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Phone,
+                                contentDescription = null,
+                                tint = Color(0xFFE53E3E)
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !uiState.value.isLoading,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFE53E3E),
+                            focusedLabelColor = Color(0xFFE53E3E),
+                            cursorColor = Color(0xFFE53E3E),
+                            focusedLeadingIconColor = Color(0xFFE53E3E)
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        supportingText = {
+                            Text(
+                                text = "10-15 digits, numbers only",
+                                color = Color.Gray,
+                                fontSize = 12.sp
+                            )
+                        }
                     )
 
-                } else {
-                    Text("Register", color = Color.Red, fontSize = 30.sp)
+                    // 密码输入框
+                    OutlinedTextField(
+                        value = uiState.value.password,
+                        onValueChange = { viewModel.setPassword(it) },
+                        label = { Text("Create Password") },
+                        placeholder = { Text("Min 8 chars, letters & numbers") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = Color(0xFFE53E3E)
+                            )
+                        },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !uiState.value.isLoading,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFE53E3E),
+                            focusedLabelColor = Color(0xFFE53E3E),
+                            cursorColor = Color(0xFFE53E3E),
+                            focusedLeadingIconColor = Color(0xFFE53E3E)
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        supportingText = {
+                            Text(
+                                text = "At least 8 characters, must contain letters and numbers",
+                                color = Color.Gray,
+                                fontSize = 12.sp
+                            )
+                        }
+                    )
+
+                    // 确认密码输入框
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
+                        label = { Text("Confirm Password") },
+                        placeholder = { Text("Re-enter your password") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = Color(0xFFE53E3E)
+                            )
+                        },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !uiState.value.isLoading,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFE53E3E),
+                            focusedLabelColor = Color(0xFFE53E3E),
+                            cursorColor = Color(0xFFE53E3E),
+                            focusedLeadingIconColor = Color(0xFFE53E3E)
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+
+                    // 注册按钮
+                    Button(
+                        onClick = {
+                            val confirmPasswordError = viewModel.validateConfirmPassword(confirmPassword)
+
+                            if(confirmPasswordError != null) {
+                                showErrorDialog = true
+                                showSuccessDialog = false
+                            } else {
+                                viewModel.registerUser()
+                                registrationAttempted = true
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        enabled = !uiState.value.isLoading && viewModel.isRegisterFormValid(confirmPassword),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE53E3E),
+                            disabledContainerColor = Color.Gray.copy(alpha = 0.3f)
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                    ) {
+                        if (uiState.value.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                "Create Account",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
             }
 
-            // Error dialog
+
+            // 底部返回登录按钮
+            TextButton(
+                onClick = { navController.navigateUp() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    "Already have an account? Sign In",
+                    fontSize = 16.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            // 错误对话框
             if (showErrorDialog) {
                 RegisterErrorDialog(
                     message = uiState.value.errorMessage ?: viewModel.validateConfirmPassword(confirmPassword) ?: "Registration failed",
@@ -202,6 +305,7 @@ fun Register(
                 )
             }
 
+            // 成功对话框
             if (showSuccessDialog) {
                 RegisterSuccessDialog(
                     onDismiss = {
@@ -214,13 +318,6 @@ fun Register(
                         }
                     }
                 )
-            }
-
-            // Back to Login Button
-            TextButton(
-                onClick = { navController.navigateUp() }
-            ) {
-                Text("Already have account? Login", fontSize = 16.sp, color = Color.Gray)
             }
         }
     }
@@ -240,25 +337,25 @@ fun RegisterErrorDialog(message: String, onDismiss: () -> Unit) {
         title = {
             Text(
                 "Registration Error",
-                color = Color.Red,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFE53E3E)
             )
         },
         text = {
-            Text(
-                message,
-                fontSize = 14.sp
-            )
+            Text(message, fontSize = 14.sp)
         },
         confirmButton = {
             Button(
                 onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFE53E3E)
+                ),
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Text("OK", color = Color.White)
             }
         },
-        containerColor = Color.White
+        shape = RoundedCornerShape(16.dp)
     )
 }
 
@@ -269,7 +366,7 @@ fun RegisterSuccessDialog(onDismiss: () -> Unit) {
         title = {
             Text(
                 "Registration Successful!",
-                color = Color.Green,
+                color = Color(0xFF48BB78),
                 fontWeight = FontWeight.Bold
             )
         },
@@ -282,11 +379,14 @@ fun RegisterSuccessDialog(onDismiss: () -> Unit) {
         confirmButton = {
             Button(
                 onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF17AA00))
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF48BB78)
+                ),
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Text("Go to Login", color = Color.White)
             }
         },
-        containerColor = Color.White
+        shape = RoundedCornerShape(16.dp)
     )
 }
