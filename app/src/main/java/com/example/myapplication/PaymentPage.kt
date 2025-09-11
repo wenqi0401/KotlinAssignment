@@ -16,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -28,22 +29,46 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.myapplication.orderData.*
+import com.example.myapplication.voucher.UserVoucherEntity
+import com.example.myapplication.voucher.VoucherEntity
+import com.example.myapplication.voucher.VoucherManager
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaymentPage(navController: NavHostController) {
     val context = LocalContext.current
-    //val orderManager = remember { OrderManager(context) }
+    val voucherManager = remember { VoucherManager.getInstance(context) }
     val coroutineScope = rememberCoroutineScope()
 
     val cartItems = CartManager.getItems()
     val subtotal = CartManager.calculateTotal()
     val deliveryFee = 4.73
     val taxRate = 0.06
+
+    // Voucher states
+    val currentUser = UserSession.getCurrentUser()
+    var userVouchers by remember { mutableStateOf<List<Pair<UserVoucherEntity, VoucherEntity>>>(emptyList()) }
+    var selectedVoucher by remember { mutableStateOf<VoucherEntity?>(null) }
+
+    // Calculate discount and totals
+    val voucherDiscount = selectedVoucher?.let { voucher ->
+        voucherManager.calculateDiscount(voucher, subtotal)
+    } ?: 0.0
+
     val tax = subtotal * taxRate
-    val voucher = 0.00
-    val total = subtotal + deliveryFee + tax - voucher
+    val total = subtotal + deliveryFee + tax - voucherDiscount
+
+    // Load user vouchers
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            voucherManager.initializeDefaultVouchers()
+            userVouchers = voucherManager.getUserVouchers(currentUser)
+        }
+    }
 
     // State variables for user inputs
     var address by remember { mutableStateOf("") }
@@ -66,6 +91,7 @@ fun PaymentPage(navController: NavHostController) {
         OrderSuccessScreen()
         return
     }
+
 
 
     Scaffold(
@@ -130,7 +156,7 @@ fun PaymentPage(navController: NavHostController) {
                         subtotal = subtotal,
                         deliveryFee = deliveryFee,
                         tax = tax,
-                        voucher = voucher,
+                        voucher = voucherDiscount,
                         total = total,
                         deliveryAddress = address,
                         phoneNumber = deliveryPhoneNumber,  // 这是配送联系电话
@@ -142,6 +168,14 @@ fun PaymentPage(navController: NavHostController) {
                     coroutineScope.launch {
                         try {
                             repository.saveOrder(order)
+
+                            //mark voucher as used if one was selected
+                            selectedVoucher?.let { voucher ->
+                                val userVoucher = userVouchers.find { it.second.id == voucher.id }?.first
+                                if (userVoucher != null) {
+                                    voucherManager.useVoucher(currentUserPhone, userVoucher.id)
+                                }
+                            }
                             Log.d("PaymentPage", "Order saved: ${order.orderId} for user: ${order.userPhoneNumber}")
                             showOrderSuccess = true
                         } catch (e: Exception) {
@@ -204,6 +238,17 @@ fun PaymentPage(navController: NavHostController) {
                 )
             }
 
+            // Voucher Selection
+            item {
+                VoucherSelectionSection(
+                    userVouchers = userVouchers,
+                    selectedVoucher = selectedVoucher,
+                    orderTotal = subtotal,
+                    onVoucherSelected = { selectedVoucher = it },
+                    voucherManager = voucherManager
+                )
+            }
+
             // Payment Method Selection
             item {
                 PaymentMethodSection(
@@ -221,7 +266,7 @@ fun PaymentPage(navController: NavHostController) {
                     subtotal = subtotal,
                     deliveryFee = deliveryFee,
                     tax = tax,
-                    voucher = voucher,
+                    voucher = voucherDiscount,
                     total = total
                 )
             }
@@ -234,7 +279,6 @@ fun PaymentPage(navController: NavHostController) {
     }
 }
 
-// Keep all other existing @Composable functions as they are
 @Composable
 fun DeliveryInfoSection() {
     Card(
@@ -357,6 +401,211 @@ fun CommentSection(
         Divider(modifier = Modifier.padding(top = 12.dp))
     }
 }
+
+@Composable
+fun VoucherSelectionSection(
+    userVouchers: List<Pair<UserVoucherEntity, VoucherEntity>>,
+    selectedVoucher: VoucherEntity?,
+    orderTotal: Double,
+    onVoucherSelected: (VoucherEntity?) -> Unit,
+    voucherManager: VoucherManager
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Text(
+            "🎫 Apply Voucher",
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .clickable { expanded = !expanded },
+            elevation = CardDefaults.cardElevation(2.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    if (selectedVoucher != null) {
+                        Text(
+                            selectedVoucher.code,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color(0xFF4CAF50)
+                        )
+                        Text(
+                            "Discount: ${if (selectedVoucher.discountType == "FIXED") "RM${selectedVoucher.discountAmount.toInt()}" else "${selectedVoucher.discountAmount.toInt()}%"}",
+                            color = Color.Red,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            "Saved: RM${"%.2f".format(voucherManager.calculateDiscount(selectedVoucher, orderTotal))}",
+                            color = Color.Green,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                    } else {
+                        Text(
+                            "Select a voucher to apply discount",
+                            color = Color.Gray,
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            "${userVouchers.size} vouchers available",
+                            color = Color.Blue,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+
+            }
+        }
+
+        if (expanded) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Column {
+                    // Option to remove selected voucher
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onVoucherSelected(null)
+                                expanded = false
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = selectedVoucher == null,
+                            onClick = {
+                                onVoucherSelected(null)
+                                expanded = false
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("No voucher", fontSize = 16.sp)
+                    }
+
+                    if (userVouchers.isNotEmpty()) {
+                        Divider()
+                    }
+
+                    // Available vouchers
+                    userVouchers.forEach { (_, voucher) ->
+                        val isEligible = orderTotal >= voucher.minOrderAmount
+                        val discount = if (isEligible) voucherManager.calculateDiscount(voucher, orderTotal) else 0.0
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    if (isEligible) {
+                                        onVoucherSelected(voucher)
+                                        expanded = false
+                                    }
+                                }
+                                .padding(16.dp)
+                                .alpha(if (isEligible) 1f else 0.5f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedVoucher?.id == voucher.id,
+                                onClick = {
+                                    if (isEligible) {
+                                        onVoucherSelected(voucher)
+                                        expanded = false
+                                    }
+                                },
+                                enabled = isEligible
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    voucher.code,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = if (isEligible) Color.Black else Color.Gray
+                                )
+                                Text(
+                                    voucher.description,
+                                    fontSize = 14.sp,
+                                    color = if (isEligible) Color.Gray else Color.LightGray
+                                )
+                                if (!isEligible) {
+                                    Text(
+                                        "Min order: RM${"%.2f".format(voucher.minOrderAmount)}",
+                                        fontSize = 12.sp,
+                                        color = Color.Red
+                                    )
+                                } else {
+                                    Text(
+                                        "Valid until: ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(voucher.expiryDate))}",
+                                        fontSize = 12.sp,
+                                        color = Color.Gray
+                                    )
+                                }
+                            }
+
+                            if (isEligible) {
+                                Box(
+                                    modifier = Modifier
+                                        .background(Color.Green.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        "-RM${"%.2f".format(discount)}",
+                                        color = Color.Green,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                            }
+                        }
+
+                        if (voucher != userVouchers.last().second) {
+                            Divider()
+                        }
+                    }
+
+                    if (userVouchers.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "No vouchers available",
+                                color = Color.Gray,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Divider(modifier = Modifier.padding(top = 12.dp))
+    }
+}
+
 
 @Composable
 fun PaymentMethodSection(

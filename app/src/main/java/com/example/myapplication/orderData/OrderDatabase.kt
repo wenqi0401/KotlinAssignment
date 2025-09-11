@@ -4,26 +4,36 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.example.myapplication.voucher.VoucherDao
+import com.example.myapplication.voucher.VoucherEntity
+import com.example.myapplication.voucher.UserVoucherEntity
 
 @Database(
-    entities = [Order::class],
-    version = 1,
+    entities = [Order::class, VoucherEntity::class, UserVoucherEntity::class],
+    version = 2, // Update version number
     exportSchema = false
 )
+
 abstract class OrderDatabase : RoomDatabase() {
     abstract fun orderDao(): OrderDao
+    abstract fun voucherDao(): VoucherDao
 
     companion object {
         @Volatile
-        private var Instance: OrderDatabase? = null
+        private var INSTANCE: OrderDatabase? = null
 
         fun getDatabase(context: Context): OrderDatabase {
-            return Instance ?: synchronized(this) {
-                Room.databaseBuilder(
-                    context,
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
                     OrderDatabase::class.java,
                     "order_database"
-                ).build().also { Instance = it }
+                )
+                    .fallbackToDestructiveMigration() // Handle version change
+                    .build()
+                INSTANCE = instance
+                instance
             }
         }
     }

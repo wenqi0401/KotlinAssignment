@@ -24,6 +24,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -42,8 +43,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.myapplication.voucher.PointsSection
-import com.example.myapplication.voucher.VoucherSection
 import kotlinx.coroutines.delay
 import kotlin.math.min // Add this import
 
@@ -93,10 +92,48 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
             }
 
             // voucher
-            VoucherSection(navController)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .clickable { navController.navigate("voucher_center") }, // 这里改路由名字
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("🎫", fontSize = 28.sp, modifier = Modifier.padding(end = 12.dp))
+                        Column {
+                            Text(
+                                text = "My Vouchers",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Red
+                            )
+                            Text(
+                                text = "Check and redeem your discounts",
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        }
+                    }
 
-            // point
-            PointsSection(navController)
+                    Icon(
+                        imageVector = Icons.Default.ArrowForward,
+                        contentDescription = "Go to vouchers",
+                        tint = Color.Red
+                    )
+                }
+            }
+
+
 
             Spacer(modifier = Modifier.weight(1f))
 

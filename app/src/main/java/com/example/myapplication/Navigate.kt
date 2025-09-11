@@ -42,7 +42,8 @@ fun MyApp() {
                     "admin_dashboard",
                     "admin_order_management",
                     "admin_order_detail/{orderId}",
-                    "forget_password"
+                    "forget_password",
+                    "admin_voucher_management"
 
                 )
             ) {
@@ -140,13 +141,9 @@ fun MyApp() {
                 HelpCenterScreen(navController = navController)
             }
 
-            // Voucher and Points Center
+            // Voucher Center
             composable("voucher_center") {
                 VoucherCenterScreen(navController = navController)
-            }
-
-            composable("points_center") {
-                UserPointsScreen(navController = navController)
             }
 
             // Admin Voucher Management
@@ -154,10 +151,6 @@ fun MyApp() {
                 AdminVoucherManagementScreen(navController = navController)
             }
 
-            // Admin Points Management (Optional - if you want admins to manage user points)
-            composable("admin_points_management") {
-                AdminPointsManagementScreen(navController = navController)
-            }
             composable ("forget_password") {
                 ForgetPasswordScreen(navController = navController)
             }
