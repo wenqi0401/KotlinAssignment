@@ -79,7 +79,6 @@ fun AdminLoginScreen(navController: NavHostController) {
                     Button(
                         onClick = {
                             isLoading = true
-                            // 模拟登录验证
                             if (username == "admin" && password == "1234") {
                                 showError = false
                                 navController.navigate("admin_dashboard") {

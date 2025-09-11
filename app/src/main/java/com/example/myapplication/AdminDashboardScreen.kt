@@ -1,6 +1,5 @@
 package com.example.myapplication
 
-import android.R.attr.onClick
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
@@ -39,7 +38,6 @@ fun AdminDashboardScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 管理订单按钮
             ElevatedButton(
                 onClick = { navController.navigate("admin_order_management") },
                 modifier = Modifier
@@ -63,7 +61,6 @@ fun AdminDashboardScreen(navController: NavController) {
                 )
             }
 
-            // voucher
             ElevatedButton(
                 onClick = { navController.navigate("admin_voucher_management") },
                 modifier = Modifier
@@ -83,9 +80,8 @@ fun AdminDashboardScreen(navController: NavController) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(120.dp))
 
-            // 登出按钮
             OutlinedButton(
                 onClick = {
                     navController.navigate("login") {
