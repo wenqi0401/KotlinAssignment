@@ -47,6 +47,7 @@ import com.example.myapplication.voucher.VoucherSection
 import kotlinx.coroutines.delay
 import kotlin.math.min // Add this import
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuManager) {
@@ -74,8 +75,8 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Main image carousel
-            AutoScrollingImageCarousel()
+            // Main image carousel - UPDATED to include navController
+            AutoScrollingImageCarousel(navController)
 
             // Top Sales section
             Text(
@@ -97,7 +98,6 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
             // point
             PointsSection(navController)
 
-
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
@@ -113,32 +113,24 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
             ) {
                 Text("Logout")
             }
-
-
-
-
         }
     }
 }
 
 @Composable
-fun AutoScrollingImageCarousel() {
-    // List of image resources for the carousel
+fun AutoScrollingImageCarousel(navController: NavHostController) {
     val images = remember {
         listOf(
             R.drawable.homepage,
-            R.drawable.placeholder,
-            R.drawable.mint,
+            R.drawable.hotday,
+            R.drawable.newcoffee,
             R.drawable.coffee,
-            R.drawable.logomixue
+            R.drawable.voucher
         )
     }
 
-    val pagerState = rememberPagerState(
-        pageCount = { images.size }
-    )
+    val pagerState = rememberPagerState(pageCount = { images.size })
 
-    // Auto-scroll effect
     LaunchedEffect(Unit) {
         while (true) {
             delay(3000)
@@ -152,7 +144,6 @@ fun AutoScrollingImageCarousel() {
             .fillMaxWidth()
             .height(200.dp)
             .padding(bottom = 16.dp)
-
     ) {
         HorizontalPager(
             state = pagerState,
@@ -164,7 +155,19 @@ fun AutoScrollingImageCarousel() {
                 painter = painterResource(id = images[page]),
                 contentDescription = "Promotional image ${page + 1}",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable {
+                        try {
+                            when (page) {
+                                0, 1 -> navController.navigate("menu_full")
+                                2, 3 -> navController.navigate("menu_category/Coffee")
+                                4 -> navController.navigate("voucher_center")
+                            }
+                        } catch (e: Exception) {
+                            println("Navigation failed: ${e.message}")
+                        }
+                    }
             )
         }
 
