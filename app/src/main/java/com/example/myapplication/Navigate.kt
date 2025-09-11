@@ -169,6 +169,7 @@ fun BuildNavHost(
         composable("admin_ratings") {
             AdminRatingsScreen(navController = navController)
         }
+
     }
 }
 

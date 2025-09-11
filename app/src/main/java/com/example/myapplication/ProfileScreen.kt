@@ -1,6 +1,5 @@
 package com.example.myapplication
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,11 +36,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,6 +47,7 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import java.io.File
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -74,7 +72,7 @@ fun ProfileScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.back),
                             tint = Color.White
                         )
                     }
@@ -150,20 +148,20 @@ fun ProfileScreen(
                     .padding(horizontal = 16.dp)
             ) {
                 ProfileOptionItem(
-                    title = "My Profile",
-                    subtitle = "Edit your personal information",
+                    title = stringResource(R.string.my_profile),
+                    subtitle = stringResource(R.string.edit_personal_info),
                     onClick = { navController.navigate("user_profile") }
                 )
 
                 ProfileOptionItem(
-                    title = "Language",
-                    subtitle = "Change app language",
+                    title = stringResource(R.string.language_setting),
+                    subtitle = stringResource(R.string.change_language),
                     onClick = { navController.navigate("language") }
                 )
 
                 ProfileOptionItem(
-                    title = "Help Center",
-                    subtitle = "Get help and support",
+                    title = stringResource(R.string.help_center),
+                    subtitle = stringResource(R.string.get_support),
                     onClick = { navController.navigate("help_center") }
                 )
             }
@@ -193,7 +191,7 @@ fun ProfileScreen(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Logout",
+                        text = stringResource(R.string.logout),
                         fontSize = 18.sp,
                         color = Color.White,
                         fontWeight = FontWeight.Bold

@@ -52,6 +52,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -353,23 +354,24 @@ fun GenderSelectionDialog(
     val uiState by authViewModel.uiState.collectAsState()
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Select Gender") },
+        title = { Text(stringResource(R.string.select_gender)) },
         text = {
             Column {
-                listOf("Male", "Female", "Other").forEach { gender ->
+                listOf(stringResource(R.string.male), R.string.female, stringResource(R.string.other)).forEach { gender ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { selectedGender = gender }
+                            .clickable { selectedGender = gender as String }
                             .padding(vertical = 4.dp)
                     ) {
                         RadioButton(
                             selected = selectedGender == gender,
-                            onClick = { selectedGender = gender }
+                            onClick = { selectedGender = gender as String }
                         )
                         Text(
-                            text = gender,
+                            text = gender as String,
+                            //fontSize = 16.sp,?
                             modifier = Modifier.padding(start = 8.dp)
                         )
                     }

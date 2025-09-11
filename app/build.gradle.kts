@@ -119,6 +119,9 @@ dependencies {
     // Other libraries
     implementation("com.google.code.gson:gson:2.10.1")
     implementation(libs.volley)
+    //language
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.core:core-ktx:1.13.1")
 
     // Testing
     testImplementation(libs.junit)

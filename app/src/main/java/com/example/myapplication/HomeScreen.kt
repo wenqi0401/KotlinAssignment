@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.delay
 import kotlin.math.min
-
+import android.net.Uri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
