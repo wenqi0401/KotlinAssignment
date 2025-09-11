@@ -383,7 +383,7 @@ fun OrderSummaryCard(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedButton(
-                    onClick = { navController.navigate("help") },
+                    onClick = { navController.navigate("help_center") },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Gray),
                     shape = RoundedCornerShape(8.dp)
