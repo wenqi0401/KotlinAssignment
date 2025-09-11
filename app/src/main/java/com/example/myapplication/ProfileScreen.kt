@@ -44,7 +44,6 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import java.io.File
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -87,6 +86,8 @@ fun ProfileScreen(
                 .background(Color.White)
         ) {
             // Profile Header with User Info and Profile Picture
+
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()

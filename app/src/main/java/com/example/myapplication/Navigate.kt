@@ -102,6 +102,10 @@ fun MyApp() {
                 OrderHistoryScreen(navController = navController)
             }
 
+            composable("help") {
+                HelpCenterScreen(navController = navController)
+            }
+
             composable("menu_full") {
                 MenuFullScreen(navController = navController, menuManager = menuManager)
             }

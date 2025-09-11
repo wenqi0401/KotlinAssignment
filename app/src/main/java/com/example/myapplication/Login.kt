@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.R.attr.onClick
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,10 +30,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -83,8 +86,9 @@ fun LoginScreen(
 
             Text(
                 text = "Login",
-                fontStyle = FontStyle.Italic,
-                fontFamily = FontFamily.Serif,
+                fontStyle = FontStyle.Normal,
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.Bold,
                 fontSize = 40.sp,
                 color = Color.White
             )
@@ -147,12 +151,6 @@ fun LoginScreen(
                 }
             }
 
-            TextButton(
-                onClick = { navController.navigate("admin_login") }
-            ) {
-                Text("Admin Login", fontSize = 16.sp, color = Color.Gray)
-            }
-
             // Show error dialog
             if (showErrorDialog) {
                 LoginErrorDialog(
@@ -172,6 +170,15 @@ fun LoginScreen(
 
             TextButton(onClick = { navController.navigate("forget_password") }) {
                 Text("Forgot Password?", fontSize = 16.sp, color = Color.Gray)
+            }
+
+
+            Button(
+                onClick = { navController.navigate("admin_login") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(White)
+            ){
+                Text("Admin Login", color = Color.Gray, fontSize = 30.sp)
             }
         }
     }
