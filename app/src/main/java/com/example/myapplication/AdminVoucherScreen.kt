@@ -1,4 +1,4 @@
-// Updated AdminVoucherManagementScreen.kt - Uses Firebase UserRepository
+// Updated AdminVoucherManagementScreen.kt - Removed Send to All Users and Added Delete Functionality
 package com.example.myapplication
 
 import androidx.compose.foundation.background
@@ -76,8 +76,8 @@ fun AdminVoucherManagementScreen(navController: NavController) {
                     voucher = voucher,
                     voucherManager = voucherManager,
                     userRepository = userRepository,
-                    onVoucherSent = {
-                        // Refresh voucher list after sending
+                    onVoucherUpdated = {
+                        // Refresh voucher list after any changes
                         coroutineScope.launch {
                             vouchers = voucherManager.getAllVouchers()
                         }
@@ -129,10 +129,11 @@ fun AdminVoucherCard(
     voucher: VoucherEntity,
     voucherManager: VoucherManager,
     userRepository: UserRepository,
-    onVoucherSent: () -> Unit
+    onVoucherUpdated: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     var showSendDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -231,11 +232,25 @@ fun AdminVoucherCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Button(
-                onClick = { showSendDialog = true },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("Send Voucher", color = Color.White)
+                Button(
+                    onClick = { showSendDialog = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Send Voucher", color = Color.White)
+                }
+
+                Button(
+                    onClick = { showDeleteDialog = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Delete", color = Color.White)
+                }
             }
         }
     }
@@ -247,26 +262,38 @@ fun AdminVoucherCard(
             onSendToPhone = { phone, v ->
                 coroutineScope.launch {
                     voucherManager.giveVoucherToUser(phone, v)
-                    onVoucherSent()
+                    onVoucherUpdated()
                 }
                 showSendDialog = false
+            }
+        )
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Voucher") },
+            text = {
+                Text("Are you sure you want to delete this voucher?\n\nCode: ${voucher.code}\nDescription: ${voucher.description}\n\nThis action cannot be undone and will not affect users who have already redeemed this voucher.")
             },
-            onSendToAll = { v ->
-                // Note: This is commented out because getting all users from Firebase
-                // can be expensive and requires additional setup
-                // You might want to implement this differently based on your needs
-                coroutineScope.launch {
-                    // For now, we'll just send to the current user as an example
-                    // In a real app, you'd need to implement a way to get all user phone numbers
-                    // from Firebase, but this could be expensive for large user bases
-
-                    // Example implementation if you decide to add this:
-                    // val allUserPhones = userRepository.getAllUserPhoneNumbers() // You'd need to implement this
-                    // voucherManager.giveVoucherToAllUsers(allUserPhones, v)
-
-                    onVoucherSent()
+            confirmButton = {
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            voucherManager.deleteVoucher(voucher.id)
+                            onVoucherUpdated()
+                        }
+                        showDeleteDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Delete", color = Color.White)
                 }
-                showSendDialog = false
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
             }
         )
     }
@@ -341,11 +368,9 @@ fun CreateVoucherDialog(
 fun SendVoucherDialog(
     voucher: VoucherEntity,
     onDismiss: () -> Unit,
-    onSendToPhone: (String, VoucherEntity) -> Unit,
-    onSendToAll: (VoucherEntity) -> Unit
+    onSendToPhone: (String, VoucherEntity) -> Unit
 ) {
     var phoneNumber by remember { mutableStateOf("") }
-    var showAllUsersWarning by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -353,6 +378,7 @@ fun SendVoucherDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Voucher Code: ${voucher.code}", fontWeight = FontWeight.Bold)
+                Text("Description: ${voucher.description}")
                 OutlinedTextField(
                     value = phoneNumber,
                     onValueChange = { phoneNumber = it },
@@ -360,34 +386,15 @@ fun SendVoucherDialog(
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
                 )
-                if (showAllUsersWarning) {
-                    Text(
-                        "Note: Sending to all users feature is currently disabled as it requires additional Firebase setup to efficiently query all users.",
-                        color = Color.Red,
-                        fontSize = 12.sp
-                    )
-                }
             }
         },
         confirmButton = {
-            Column {
-                Button(
-                    onClick = { if (phoneNumber.isNotBlank()) onSendToPhone(phoneNumber, voucher) },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-                    enabled = phoneNumber.isNotBlank()
-                ) {
-                    Text("Send to Phone", color = Color.White)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        showAllUsersWarning = true
-                        // onSendToAll(voucher) // Commented out - see note above
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3))
-                ) {
-                    Text("Send to All Users", color = Color.White)
-                }
+            Button(
+                onClick = { if (phoneNumber.isNotBlank()) onSendToPhone(phoneNumber, voucher) },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                enabled = phoneNumber.isNotBlank()
+            ) {
+                Text("Send to Phone", color = Color.White)
             }
         },
         dismissButton = { OutlinedButton(onClick = onDismiss) { Text("Cancel") } }

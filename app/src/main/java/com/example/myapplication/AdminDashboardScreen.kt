@@ -80,7 +80,7 @@ fun AdminDashboardScreen(navController: NavController) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(120.dp))
+            Spacer(modifier = Modifier.height(240.dp))
 
             OutlinedButton(
                 onClick = {
