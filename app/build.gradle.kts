@@ -114,7 +114,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx:24.10.0")
     implementation("com.google.firebase:firebase-auth-ktx:22.3.0")
 
-
+    implementation("androidx.compose.foundation:foundation:1.4.0")
 
     // Other libraries
     implementation("com.google.code.gson:gson:2.10.1")

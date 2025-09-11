@@ -1,14 +1,17 @@
 package com.example.myapplication
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,11 +21,17 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    containerColor = Color.White
+                CompositionLocalProvider(
+                    LocalConfiguration provides Configuration().apply {
+                        setTo(resources.configuration)
+                    }
                 ) {
-                    MyApp()
+                    Scaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        containerColor = Color.White
+                    ) {
+                        MyApp()
+                    }
                 }
             }
         }
