@@ -71,11 +71,18 @@ class OrderRepository(private val context: Context) {
             }
         }
     }
+
     suspend fun updateOrderRating(orderId: String, rating: Int, feedback: String) {
         withContext(Dispatchers.IO) {
             try {
-                orderDao.updateOrderRating(orderId, rating, feedback)
-                Log.d("OrderRepository", "Order rating updated: $orderId, rating: $rating")
+                val order = orderDao.getOrderById(orderId)
+                order?.let {
+                    val updatedOrder = it.copy(rating = rating, feedback = feedback)
+                    orderDao.updateOrder(updatedOrder) // Use the proper update function
+                    Log.d("OrderRepository", "Order rating updated: $orderId, rating: $rating")
+                } ?: run {
+                    Log.e("OrderRepository", "Order not found: $orderId")
+                }
             } catch (e: Exception) {
                 Log.e("OrderRepository", "Error updating order rating", e)
                 throw e
@@ -101,6 +108,17 @@ class OrderRepository(private val context: Context) {
             } catch (e: Exception) {
                 Log.e("OrderRepository", "Error getting rated orders", e)
                 emptyList()
+            }
+        }
+    }
+
+    suspend fun getRatingCount(): Int {
+        return withContext(Dispatchers.IO) {
+            try {
+                orderDao.getRatingCount()
+            } catch (e: Exception) {
+                Log.e("OrderRepository", "Error getting rating count", e)
+                0
             }
         }
     }

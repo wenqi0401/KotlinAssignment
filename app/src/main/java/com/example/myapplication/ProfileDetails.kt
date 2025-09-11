@@ -109,14 +109,14 @@ fun UserProfileScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
-                .background(Color(0xFF1E1E1E))
+                .background(Color.Transparent)
         ) {
             // Profile Picture Section
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF2C2C2C))
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Column(
                     modifier = Modifier
@@ -133,7 +133,7 @@ fun UserProfileScreen(
                         modifier = Modifier.size(100.dp)
                     )
 
-                    Text("Change Photo", color = Color.White, modifier = Modifier.padding(top = 8.dp))
+                    Text("Change Photo", color = Color.Black, modifier = Modifier.padding(top = 8.dp))
                 }
             }
 
@@ -142,7 +142,7 @@ fun UserProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF2C2C2C))
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Column {
                     // Name Row
@@ -251,7 +251,7 @@ private fun DefaultProfileIcon(modifier: Modifier = Modifier) {
         imageVector = Icons.Default.AccountCircle,
         contentDescription = "Default Profile",
         modifier = modifier,
-        tint = Color.White
+        tint = Color.Black
     )
 }
 
@@ -272,7 +272,7 @@ private fun ProfileInfoRow(
     ) {
         Text(
             text = label,
-            color = Color.White,
+            color = Color.Black,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium
         )
@@ -282,7 +282,7 @@ private fun ProfileInfoRow(
         ) {
             Text(
                 text = value,
-                color = Color.White.copy(alpha = 0.9f),
+                color = Color.Black,
                 fontSize = 16.sp
             )
 
@@ -291,7 +291,7 @@ private fun ProfileInfoRow(
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowRight,
                     contentDescription = "Edit $label",
-                    tint = Color.White.copy(alpha = 0.7f),
+                    tint = Color.Black,
                     modifier = Modifier.size(20.dp)
                 )
             }
