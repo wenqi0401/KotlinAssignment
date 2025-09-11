@@ -25,7 +25,9 @@ data class Order(
     val paymentMethod: String,
     val cardNumber: String? = null,
     val orderDate: Long = System.currentTimeMillis(),
-    val status: String = "Preparing"
+    val status: String = "Preparing",
+    val rating: Int = 0,
+    val feedback: String = ""
 )
 
 

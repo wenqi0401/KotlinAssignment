@@ -118,7 +118,7 @@ fun MyApp() {
             composable("language") {
                 LanguageScreen(navController = navController)
             }
-            composable ("user_profile") {
+            composable("user_profile") {
                 UserProfileScreen(navController = navController)
             }
 
@@ -130,12 +130,19 @@ fun MyApp() {
             }
 
             composable("admin_order_management") {
-                AdminOrderListScreen(navController, repository = OrderRepository(LocalContext.current))
+                AdminOrderListScreen(
+                    navController,
+                    repository = OrderRepository(LocalContext.current)
+                )
             }
 
             composable("admin_order_detail/{orderId}") { backStackEntry ->
                 val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
-                AdminOrderDetailScreen(navController, orderId, repository = OrderRepository(LocalContext.current))
+                AdminOrderDetailScreen(
+                    navController,
+                    orderId,
+                    repository = OrderRepository(LocalContext.current)
+                )
             }
             composable("help_center") {
                 HelpCenterScreen(navController = navController)
@@ -151,8 +158,11 @@ fun MyApp() {
                 AdminVoucherManagementScreen(navController = navController)
             }
 
-            composable ("forget_password") {
+            composable("forget_password") {
                 ForgetPasswordScreen(navController = navController)
+            }
+            composable("admin_ratings") {
+                AdminRatingsScreen(navController = navController)
             }
         }
     }

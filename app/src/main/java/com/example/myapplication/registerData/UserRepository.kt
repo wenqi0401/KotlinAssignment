@@ -5,8 +5,6 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
-import kotlin.collections.get
-import kotlin.text.get
 
 class UserRepository {
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()

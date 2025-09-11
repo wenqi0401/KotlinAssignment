@@ -71,4 +71,37 @@ class OrderRepository(private val context: Context) {
             }
         }
     }
+    suspend fun updateOrderRating(orderId: String, rating: Int, feedback: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                orderDao.updateOrderRating(orderId, rating, feedback)
+                Log.d("OrderRepository", "Order rating updated: $orderId, rating: $rating")
+            } catch (e: Exception) {
+                Log.e("OrderRepository", "Error updating order rating", e)
+                throw e
+            }
+        }
+    }
+
+    suspend fun getAverageRating(): Double {
+        return withContext(Dispatchers.IO) {
+            try {
+                orderDao.getAverageRating() ?: 0.0
+            } catch (e: Exception) {
+                Log.e("OrderRepository", "Error getting average rating", e)
+                0.0
+            }
+        }
+    }
+
+    suspend fun getRatedOrders(): List<Order> {
+        return withContext(Dispatchers.IO) {
+            try {
+                orderDao.getRatedOrders()
+            } catch (e: Exception) {
+                Log.e("OrderRepository", "Error getting rated orders", e)
+                emptyList()
+            }
+        }
+    }
 }

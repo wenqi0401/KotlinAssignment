@@ -82,6 +82,25 @@ fun AdminDashboardScreen(navController: NavController) {
                     fontWeight = FontWeight.Medium
                 )
             }
+            //Rating
+            ElevatedButton(
+                onClick = { navController.navigate("admin_ratings") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp),
+                colors = ButtonDefaults.elevatedButtonColors(
+                    containerColor = Color(0xFFFF9800)
+                )
+            ) {
+                Text("⭐", fontSize = 24.sp)
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    "View Ratings & Feedback",
+                    fontSize = 18.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Medium
+                )
+            }
 
             Spacer(modifier = Modifier.height(60.dp))
 
