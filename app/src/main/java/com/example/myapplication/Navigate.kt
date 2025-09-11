@@ -43,7 +43,8 @@ fun MyApp() {
                     "admin_order_management",
                     "admin_order_detail/{orderId}",
                     "forget_password",
-                    "admin_voucher_management"
+                    "admin_voucher_management",
+                    "admin_ratings"
 
                 )
             ) {

@@ -71,6 +71,11 @@ class VoucherManager private constructor(private val context: Context) {
             voucher.currentUsage < voucher.maxUsage &&
             voucher.expiryDate > System.currentTimeMillis()) {
 
+            val existingUserVouchers = voucherDao.getUserVouchers(userPhoneNumber)
+            if (existingUserVouchers.any { it.voucherId == voucher.id }) {
+                return false // User has already redeemed this voucher
+            }
+
             return giveVoucherToUser(userPhoneNumber, voucher)
         }
         return false
@@ -80,7 +85,7 @@ class VoucherManager private constructor(private val context: Context) {
         val existingUserVouchers = voucherDao.getUserVouchers(userPhoneNumber)
 
         // Check if user already has this voucher
-        if (existingUserVouchers.any { it.voucherId == voucher.id && !it.isUsed }) {
+        if (existingUserVouchers.any { it.voucherId == voucher.id}) {
             return false
         }
 
