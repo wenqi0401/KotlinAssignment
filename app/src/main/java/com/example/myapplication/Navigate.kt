@@ -105,6 +105,17 @@ fun BuildNavHost(
         composable("register_success") {
             RegisterSuccess(navController = navController)
         }
+        composable("item_detail/{itemName}") { backStackEntry ->
+            val itemName = backStackEntry.arguments?.getString("itemName") ?: ""
+            val item = menuManager.getItemByName(itemName)
+            if (item != null) {
+                ItemDetailScreen(
+                    navController = navController,
+                    item = item,
+                    snackbarHostState = snackbarHostState
+                )
+            }
+        }
         composable("cart") {
             CartPage(navController = navController)
         }
@@ -172,5 +183,11 @@ fun BuildNavHost(
     }
 }
 
-
+@Composable
+fun WithOrientationSupport(content: @Composable () -> Unit) {
+    OrientationAwareContent(
+        portraitContent = content,
+        landscapeContent = { SimpleLandscapeWrapper(content = content) }
+    )
+}
 

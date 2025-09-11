@@ -110,7 +110,7 @@ fun MenuFullScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                     TextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { Text("Search ...") },
+                        placeholder = { Text("Search menu...") },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
@@ -119,8 +119,8 @@ fun MenuFullScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                             unfocusedIndicatorColor = Color.White,
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
-                            focusedPlaceholderColor = Color.White,
-                            unfocusedPlaceholderColor = Color.White
+                            focusedPlaceholderColor = Color.White.copy(alpha = 0.7f),
+                            unfocusedPlaceholderColor = Color.White.copy(alpha = 0.7f)
                         )
                     )
                 },

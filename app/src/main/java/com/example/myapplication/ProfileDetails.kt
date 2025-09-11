@@ -17,9 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
@@ -112,7 +110,6 @@ fun UserProfileScreen(
                 .padding(paddingValues)
                 .fillMaxSize()
                 .background(Color.Transparent)
-                .verticalScroll(rememberScrollState())
         ) {
             // Profile Picture Section
             Card(
