@@ -83,7 +83,7 @@ fun getContactOptions(context: android.content.Context): List<ContactOption> {
         ContactOption(
             "Call Support",
             Intent(Intent.ACTION_DIAL).apply {
-                data = Uri.parse("tel:+11234567890") // Replace with your support number
+                data = Uri.parse("tel:+601130082067") // Replace with your support number
             }
         ),
         ContactOption(
@@ -103,7 +103,7 @@ fun getContactOptions(context: android.content.Context): List<ContactOption> {
         ContactOption(
             "Website",
             Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("https://www.example.com") // Replace with your website
+                data = Uri.parse("https://www.mixuemalaysia.com") // Replace with your website
             }
         ),
         ContactOption(
@@ -161,6 +161,7 @@ fun HelpCenterScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(padding)
                 .background(Color.Transparent)
+                .verticalScroll(rememberScrollState())
         ) {
             // Search Bar
             TextField(

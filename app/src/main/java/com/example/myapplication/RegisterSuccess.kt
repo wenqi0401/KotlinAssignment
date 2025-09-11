@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
@@ -43,7 +45,8 @@ fun RegisterSuccess(navController: NavHostController) {
 
 
         Column(
-            modifier = Modifier.padding(paddingValues).fillMaxSize(),
+            modifier = Modifier.padding(paddingValues).fillMaxSize().verticalScroll(
+                rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
