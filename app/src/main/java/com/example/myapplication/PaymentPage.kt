@@ -1,13 +1,11 @@
 package com.example.myapplication
 
-import android.R.attr.phoneNumber
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -74,10 +72,58 @@ fun PaymentPage(navController: NavHostController) {
     var address by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
     var comment by remember { mutableStateOf("") }
-    var selectedPaymentMethod by remember { mutableStateOf("visa") }
+    var selectedPaymentMethod by remember { mutableStateOf("") }
     var cardNumber by remember { mutableStateOf("") }
 
+    // Validation state
+    var showValidationErrors by remember { mutableStateOf(false) }
+    var phoneNumberError by remember { mutableStateOf("") }
+    var addressError by remember { mutableStateOf("") }
+    var paymentMethodError by remember { mutableStateOf("") }
+    var cardNumberError by remember { mutableStateOf("") }
+
     var showOrderSuccess by remember { mutableStateOf(false) }
+
+    // Validation function
+    fun validateForm(): Boolean {
+        var isValid = true
+
+        // Reset errors
+        phoneNumberError = ""
+        addressError = ""
+        paymentMethodError = ""
+        cardNumberError = ""
+
+        // Validate phone number
+        if (phoneNumber.isBlank()) {
+            phoneNumberError = "Phone number is required"
+            isValid = false
+        } else if (phoneNumber.length < 10) {
+            phoneNumberError = "Phone number must be at least 10 digits"
+            isValid = false
+        }
+
+        // Validate address
+        if (address.isBlank()) {
+            addressError = "Delivery address is required"
+            isValid = false
+        }
+
+        // Validate payment method
+        if (selectedPaymentMethod.isBlank()) {
+            paymentMethodError = "Please select a payment method"
+            isValid = false
+        }
+
+        // Validate card number if Visa is selected
+        if (selectedPaymentMethod == "visa" && cardNumber.length != 16) {
+            cardNumberError = "Please enter a valid 16-digit card number"
+            isValid = false
+        }
+
+        showValidationErrors = !isValid
+        return isValid
+    }
 
     if (showOrderSuccess) {
         LaunchedEffect(Unit) {
@@ -91,8 +137,6 @@ fun PaymentPage(navController: NavHostController) {
         OrderSuccessScreen()
         return
     }
-
-
 
     Scaffold(
         topBar = {
@@ -125,6 +169,11 @@ fun PaymentPage(navController: NavHostController) {
 
             Button(
                 onClick = {
+                    // Validate form before processing
+                    if (!validateForm()) {
+                        return@Button
+                    }
+
                     val orderId = "MX-" + (1000..9999).random()
 
                     // 总是使用已登录用户的手机号码作为userPhoneNumber
@@ -183,8 +232,7 @@ fun PaymentPage(navController: NavHostController) {
                         }
                     }
                 },
-
-            modifier = Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
                     .height(56.dp),
@@ -218,7 +266,9 @@ fun PaymentPage(navController: NavHostController) {
             item {
                 PhoneNumberSection(
                     phoneNumber = phoneNumber,
-                    onPhoneNumberChange = { phoneNumber = it }
+                    onPhoneNumberChange = { phoneNumber = it },
+                    errorMessage = if (showValidationErrors) phoneNumberError else "",
+                    isError = showValidationErrors && phoneNumberError.isNotEmpty()
                 )
             }
 
@@ -226,7 +276,9 @@ fun PaymentPage(navController: NavHostController) {
             item {
                 AddressSection(
                     address = address,
-                    onAddressChange = { address = it }
+                    onAddressChange = { address = it },
+                    errorMessage = if (showValidationErrors) addressError else "",
+                    isError = showValidationErrors && addressError.isNotEmpty()
                 )
             }
 
@@ -255,7 +307,10 @@ fun PaymentPage(navController: NavHostController) {
                     selectedMethod = selectedPaymentMethod,
                     onMethodChange = { selectedPaymentMethod = it },
                     cardNumber = cardNumber,
-                    onCardNumberChange = { cardNumber = it }
+                    onCardNumberChange = { cardNumber = it },
+                    paymentMethodError = if (showValidationErrors) paymentMethodError else "",
+                    cardNumberError = if (showValidationErrors) cardNumberError else "",
+                    showErrors = showValidationErrors
                 )
             }
 
@@ -317,7 +372,9 @@ fun DeliveryInfoSection() {
 @Composable
 fun PhoneNumberSection(
     phoneNumber: String,
-    onPhoneNumberChange: (String) -> Unit
+    onPhoneNumberChange: (String) -> Unit,
+    errorMessage: String = "",
+    isError: Boolean = false
 ) {
     Column(
         modifier = Modifier
@@ -325,10 +382,11 @@ fun PhoneNumberSection(
             .padding(vertical = 8.dp)
     ) {
         Text(
-            "📞 Phone number",
+            "📞 Phone number *",
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = if (isError) Color.Red else Color.Black
         )
         OutlinedTextField(
             value = phoneNumber,
@@ -338,8 +396,21 @@ fun PhoneNumberSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            singleLine = true
+            singleLine = true,
+            isError = isError,
+            colors = OutlinedTextFieldDefaults.colors(
+                errorBorderColor = Color.Red,
+                errorLabelColor = Color.Red
+            )
         )
+        if (errorMessage.isNotEmpty()) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+        }
         Divider(modifier = Modifier.padding(top = 12.dp))
     }
 }
@@ -347,7 +418,9 @@ fun PhoneNumberSection(
 @Composable
 fun AddressSection(
     address: String,
-    onAddressChange: (String) -> Unit
+    onAddressChange: (String) -> Unit,
+    errorMessage: String = "",
+    isError: Boolean = false
 ) {
     Column(
         modifier = Modifier
@@ -355,10 +428,11 @@ fun AddressSection(
             .padding(vertical = 8.dp)
     ) {
         Text(
-            "📍 Delivery Address",
+            "📍 Delivery Address *",
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = if (isError) Color.Red else Color.Black
         )
         OutlinedTextField(
             value = address,
@@ -367,8 +441,21 @@ fun AddressSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            minLines = 2
+            minLines = 2,
+            isError = isError,
+            colors = OutlinedTextFieldDefaults.colors(
+                errorBorderColor = Color.Red,
+                errorLabelColor = Color.Red
+            )
         )
+        if (errorMessage.isNotEmpty()) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+        }
         Divider(modifier = Modifier.padding(top = 12.dp))
     }
 }
@@ -612,7 +699,10 @@ fun PaymentMethodSection(
     selectedMethod: String,
     onMethodChange: (String) -> Unit,
     cardNumber: String,
-    onCardNumberChange: (String) -> Unit
+    onCardNumberChange: (String) -> Unit,
+    paymentMethodError: String = "",
+    cardNumberError: String = "",
+    showErrors: Boolean = false
 ) {
     Column(
         modifier = Modifier
@@ -620,10 +710,11 @@ fun PaymentMethodSection(
             .padding(vertical = 8.dp)
     ) {
         Text(
-            "💳 Payment Method",
+            "💳 Payment Method *",
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            color = if (showErrors && paymentMethodError.isNotEmpty()) Color.Red else Color.Black
         )
 
         // Visa Card Option
@@ -652,8 +743,21 @@ fun PaymentMethodSection(
                 singleLine = true,
                 leadingIcon = {
                     Text("💳", fontSize = 20.sp)
-                }
+                },
+                isError = showErrors && cardNumberError.isNotEmpty(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    errorBorderColor = Color.Red,
+                    errorLabelColor = Color.Red
+                )
             )
+            if (showErrors && cardNumberError.isNotEmpty()) {
+                Text(
+                    text = cardNumberError,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -677,6 +781,15 @@ fun PaymentMethodSection(
             isSelected = selectedMethod == "cash",
             onClick = { onMethodChange("cash") }
         )
+
+        if (showErrors && paymentMethodError.isNotEmpty()) {
+            Text(
+                text = paymentMethodError,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+        }
 
         Divider(modifier = Modifier.padding(top = 12.dp))
     }

@@ -373,7 +373,7 @@ fun OrderSummaryCard(
 
                 OrderDetailRow("📱 Phone", order.phoneNumber ?: "N/A")
                 OrderDetailRow("📍 Address", order.deliveryAddress ?: "N/A")
-                OrderDetailRow("💳 Payment", order.paymentMethod?.uppercase() ?: "UNKNOWN")
+                OrderDetailRow("💳 Payment ", order.paymentMethod?.uppercase() ?: "UNKNOWN")
                 if (!order.comment.isNullOrEmpty()) {
                     OrderDetailRow("💬 Comment", order.comment)
                 }
