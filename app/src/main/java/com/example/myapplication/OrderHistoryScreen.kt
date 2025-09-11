@@ -416,14 +416,6 @@ fun OrderSummaryCard(
                 OutlinedButton(
                     onClick = { /* TODO */ },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("REORDER", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                }
-                OutlinedButton(
-                    onClick = { /* TODO */ },
-                    modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Gray),
                     shape = RoundedCornerShape(8.dp)
                 ) {
