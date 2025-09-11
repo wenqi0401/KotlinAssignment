@@ -29,19 +29,18 @@ fun AdminRatingsScreen(navController: NavController) {
     val repository = remember { OrderRepository(context) }
     var ratedOrders by remember { mutableStateOf(emptyList<Order>()) }
     var averageRating by remember { mutableStateOf(0.0) }
+    var ratingCount by remember { mutableStateOf(0) }
     var isLoading by remember { mutableStateOf(true) }
-    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            try {
-                ratedOrders = repository.getRatedOrders()
-                averageRating = repository.getAverageRating()
-            } catch (e: Exception) {
-                // Handle error
-            } finally {
-                isLoading = false
-            }
+        try {
+            ratedOrders = repository.getRatedOrders()
+            averageRating = repository.getAverageRating()
+            ratingCount = repository.getRatingCount()
+        } catch (e: Exception) {
+            // Handle error
+        } finally {
+            isLoading = false
         }
     }
 
@@ -106,7 +105,7 @@ fun AdminRatingsScreen(navController: NavController) {
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            "Based on ${ratedOrders.size} ratings",
+                            "Based on $ratingCount ratings",
                             fontSize = 14.sp,
                             color = Color.Gray
                         )
@@ -159,7 +158,7 @@ fun RatingItemCard(order: Order) {
                 Row {
                     for (i in 1..5) {
                         Icon(
-                            if (i <= order.rating) Icons.Default.Star else Icons.Default.Star,
+                            Icons.Default.Star, // Use the same icon for both filled and outlined
                             contentDescription = null,
                             tint = if (i <= order.rating) Color(0xFFFFD700) else Color.LightGray,
                             modifier = Modifier.size(20.dp)
@@ -191,6 +190,15 @@ fun RatingItemCard(order: Order) {
                 "Order: ${order.orderId.take(8)}... | User: ${order.userPhoneNumber}",
                 fontSize = 12.sp,
                 color = Color.Gray
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                "Rating: ${order.rating}/5 stars",
+                fontSize = 12.sp,
+                color = Color(0xFFFF9800),
+                fontWeight = FontWeight.Bold
             )
         }
     }
