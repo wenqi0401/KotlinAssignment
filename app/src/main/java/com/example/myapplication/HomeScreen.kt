@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
@@ -59,96 +61,84 @@ fun MenuMainScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
                 )
             )
         }
-
     ) { padding ->
+        // Add vertical scroll here
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
+                .verticalScroll(rememberScrollState()) // Add this line for scrolling
         ) {
-            Text(
-                text = "Welcome to MIXUE! 🍵",
-                fontSize = 24.sp,
-                color = Color.Red,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            // Main image carousel - UPDATED to include navController
-            AutoScrollingImageCarousel(navController)
-
-            // Top Sales section
-            Text(
-                text = "Top Sales",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Red,
-                modifier = Modifier.padding(vertical = 16.dp)
-            )
-
-            TopSalesCarousel(menuManager) { item ->
-                // Navigate to item detail when a top sales item is clicked
-                navController.navigate("item_detail/${item.name}")
-            }
-
-            // voucher
-            Card(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .clickable { navController.navigate("voucher_center") }, // 这里改路由名字
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                    .padding(16.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🎫", fontSize = 28.sp, modifier = Modifier.padding(end = 12.dp))
-                        Column {
-                            Text(
-                                text = "My Vouchers",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Red
-                            )
-                            Text(
-                                text = "Check and redeem your discounts",
-                                fontSize = 14.sp,
-                                color = Color.Gray
-                            )
-                        }
-                    }
+                Text(
+                    text = "Welcome to MIXUE! 🍵",
+                    fontSize = 24.sp,
+                    color = Color.Red,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
 
-                    Icon(
-                        imageVector = Icons.Default.ArrowForward,
-                        contentDescription = "Go to vouchers",
-                        tint = Color.Red
-                    )
+                // Main image carousel - UPDATED to include navController
+                AutoScrollingImageCarousel(navController)
+
+                // Top Sales section
+                Text(
+                    text = "Top Sales",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Red,
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
+
+                TopSalesCarousel(menuManager) { item ->
+                    // Navigate to item detail when a top sales item is clicked
+                    navController.navigate("item_detail/${item.name}")
                 }
-            }
 
-
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Button(
-                onClick = {
-                    navController.navigate("login") {
-                        popUpTo(navController.graph.startDestinationId) {
-                            inclusive = true
+                // voucher
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .clickable { navController.navigate("voucher_center") },
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("🎫", fontSize = 28.sp, modifier = Modifier.padding(end = 12.dp))
+                            Column {
+                                Text(
+                                    text = "My Vouchers",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Red
+                                )
+                                Text(
+                                    text = "Check and redeem your discounts",
+                                    fontSize = 14.sp,
+                                    color = Color.Gray
+                                )
+                            }
                         }
+
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = "Go to vouchers",
+                            tint = Color.Red
+                        )
                     }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
-            ) {
-                Text("Logout")
+                }
+
             }
         }
     }
