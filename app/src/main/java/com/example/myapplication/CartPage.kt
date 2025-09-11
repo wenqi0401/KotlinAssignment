@@ -25,17 +25,14 @@ import androidx.navigation.NavHostController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartPage(navController: NavHostController) {
-    // 使用 remember 来触发重组
     var cartItems by remember { mutableStateOf(CartManager.getItems()) }
     var totalPrice by remember { mutableStateOf(CartManager.calculateTotal()) }
 
-    // 刷新数据的函数
     fun refreshCart() {
         cartItems = CartManager.getItems()
         totalPrice = CartManager.calculateTotal()
     }
 
-    // 页面进入时刷新数据
     LaunchedEffect(Unit) {
         refreshCart()
     }
@@ -167,7 +164,6 @@ fun CartPage(navController: NavHostController) {
                     )
                 }
 
-                // 底部间距
                 item {
                     Spacer(modifier = Modifier.height(120.dp))
                 }
@@ -193,7 +189,6 @@ fun CartItemCard(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 商品图片
             Image(
                 painter = painterResource(id = cartItem.item.imageResId),
                 contentDescription = cartItem.item.name,
@@ -205,7 +200,6 @@ fun CartItemCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // 商品详情
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     cartItem.item.name,
@@ -228,9 +222,7 @@ fun CartItemCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 数量控制
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // 减少按钮
                     Button(
                         onClick = {
                             if (cartItem.quantity > 1) {
@@ -250,7 +242,6 @@ fun CartItemCard(
                         fontWeight = FontWeight.Bold
                     )
 
-                    // 增加按钮
                     Button(
                         onClick = { onQuantityChange(cartItem.quantity + 1) },
                         modifier = Modifier.size(32.dp),
@@ -271,7 +262,6 @@ fun CartItemCard(
                 )
             }
 
-            // 删除按钮
             IconButton(onClick = onRemove) {
                 Icon(Icons.Default.Delete, contentDescription = "Remove", tint = Color.Red)
             }

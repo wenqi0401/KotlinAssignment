@@ -25,10 +25,8 @@ fun AdminOrderDetailScreen(
     var isLoading by remember { mutableStateOf(true) }
     var showUpdateDialog by remember { mutableStateOf(false) }
 
-    // 协程作用域（按钮点击时用）
     val coroutineScope = rememberCoroutineScope()
 
-    // 初始加载
     LaunchedEffect(orderId) {
         order = repository.getOrderById(orderId)
         isLoading = false
@@ -64,7 +62,6 @@ fun AdminOrderDetailScreen(
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 订单信息卡片
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp)
@@ -87,6 +84,8 @@ fun AdminOrderDetailScreen(
                             java.util.Locale.getDefault()
                         ).format(java.util.Date(order!!.orderDate))
                     )
+                    OrderInfoRow("🛒 Items", "${order!!.items.size} items")
+
                     OrderInfoRow("💰 Total", "RM ${String.format("%.2f", order!!.total)}")
 
                     Row(
@@ -99,7 +98,6 @@ fun AdminOrderDetailScreen(
                 }
             }
 
-            // 订单项目
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp)
@@ -126,7 +124,6 @@ fun AdminOrderDetailScreen(
                 }
             }
 
-            // 状态更新按钮
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp)
@@ -166,7 +163,6 @@ fun AdminOrderDetailScreen(
 
         }
 
-        // 更新确认对话框
         if (showUpdateDialog) {
             AlertDialog(
                 onDismissRequest = { showUpdateDialog = false },

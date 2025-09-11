@@ -3,7 +3,6 @@ package com.example.myapplication.voucher
 import android.content.Context
 import com.example.myapplication.orderData.OrderDatabase
 import com.example.myapplication.registerData.UserRepository
-import java.util.*
 
 class VoucherManager private constructor(private val context: Context) {
     private val database = OrderDatabase.getDatabase(context)
@@ -38,18 +37,6 @@ class VoucherManager private constructor(private val context: Context) {
                     maxUsage = 1000,
                     currentUsage = 0,
                     description = "Welcome discount RM5 off"
-                ),
-                VoucherEntity(
-                    id = "STUDENT10",
-                    code = "STUDENT10",
-                    discountAmount = 10.0,
-                    discountType = "PERCENTAGE",
-                    minOrderAmount = 20.0,
-                    expiryDate = System.currentTimeMillis() + (60 * 24 * 60 * 60 * 1000L),
-                    isActive = true,
-                    maxUsage = 500,
-                    currentUsage = 0,
-                    description = "Student discount 10% off"
                 ),
                 VoucherEntity(
                     id = "NEWUSER15",
@@ -113,13 +100,8 @@ class VoucherManager private constructor(private val context: Context) {
 
         return true
     }
-
-    // Note: This method would need to be called with a list of phone numbers
-    // You can get all users from Firebase if needed, but it's resource intensive
-    suspend fun giveVoucherToAllUsers(userPhoneNumbers: List<String>, voucher: VoucherEntity) {
-        userPhoneNumbers.forEach { phone ->
-            giveVoucherToUser(phone, voucher)
-        }
+    suspend fun deleteVoucher(voucherId: String) {
+        voucherDao.deleteVoucher(voucherId)
     }
 
     suspend fun getUserVouchers(userPhoneNumber: String): List<Pair<UserVoucherEntity, VoucherEntity>> {
@@ -162,27 +144,4 @@ class VoucherManager private constructor(private val context: Context) {
         }
     }
 
-    suspend fun getVoucherById(voucherId: String): VoucherEntity? {
-        val allVouchers = voucherDao.getAllVouchers()
-        return allVouchers.find { it.id == voucherId }
-    }
-
-    suspend fun getActiveVouchers(): List<VoucherEntity> {
-        val allVouchers = voucherDao.getAllVouchers()
-        return allVouchers.filter {
-            it.isActive &&
-                    it.expiryDate > System.currentTimeMillis() &&
-                    it.currentUsage < it.maxUsage
-        }
-    }
-
-    suspend fun deleteExpiredVouchers() {
-        val allVouchers = voucherDao.getAllVouchers()
-        val expiredVouchers = allVouchers.filter { it.expiryDate <= System.currentTimeMillis() }
-
-        expiredVouchers.forEach { voucher ->
-            val deactivatedVoucher = voucher.copy(isActive = false)
-            voucherDao.updateVoucher(deactivatedVoucher)
-        }
-    }
 }

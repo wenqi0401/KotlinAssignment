@@ -23,12 +23,10 @@ fun AdminOrderListScreen(
     navController: NavController,
     repository: OrderRepository
 ) {
-    // 不要在 remember 里直接调用 suspend 函数
     var orders by remember { mutableStateOf<List<Order>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // 初次进入页面加载一次（如需定时刷新可再加循环/定时器）
     LaunchedEffect(Unit) {
         try {
             orders = repository.getAllOrders()   // suspend -> OK in coroutine
@@ -128,7 +126,6 @@ fun AdminOrderListScreen(
                                         )
                                     }
 
-                                    // Status Badge（保持你原来的）
                                     StatusBadgeAdmin(order.status)
                                 }
                             }

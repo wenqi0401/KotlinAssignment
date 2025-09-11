@@ -66,8 +66,4 @@ object CartManager {
         return _cartItems.sumOf { it.item.price * it.quantity }
     }
 
-    // 获取商品总数量
-    fun getTotalItemCount(): Int {
-        return _cartItems.sumOf { it.quantity }
-    }
 }
