@@ -413,11 +413,28 @@ fun OrderSummaryCard(
 
 @Composable
 fun OrderItemRow(orderItem: OrderItem) {
+    val context = LocalContext.current
+
+    // Check if resource is valid and is a drawable type
+    val isValidDrawable = remember(orderItem.imageResId) {
+        if (orderItem.imageResId == 0) {
+            false
+        } else {
+            try {
+                val resourceType = context.resources.getResourceTypeName(orderItem.imageResId)
+                resourceType == "drawable" || resourceType == "mipmap"
+            } catch (e: Exception) {
+                Log.w("OrderItemRow", "Invalid resource ID ${orderItem.imageResId}: ${e.message}")
+                false
+            }
+        }
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (orderItem.imageResId != 0) {
+        if (isValidDrawable) {
             Image(
                 painter = painterResource(id = orderItem.imageResId),
                 contentDescription = orderItem.name ?: "",
@@ -427,15 +444,7 @@ fun OrderItemRow(orderItem: OrderItem) {
                 contentScale = ContentScale.Crop
             )
         } else {
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color.Gray.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("?", color = Color.Gray)
-            }
+            PlaceholderBox()
         }
 
         Spacer(modifier = Modifier.width(12.dp))
@@ -463,6 +472,18 @@ fun OrderItemRow(orderItem: OrderItem) {
     }
 }
 
+@Composable
+private fun PlaceholderBox() {
+    Box(
+        modifier = Modifier
+            .size(50.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.Gray.copy(alpha = 0.2f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("?", color = Color.Gray)
+    }
+}
 @Composable
 fun PriceDetailRow(label: String, amount: Double, isDiscount: Boolean = false) {
     Row(
