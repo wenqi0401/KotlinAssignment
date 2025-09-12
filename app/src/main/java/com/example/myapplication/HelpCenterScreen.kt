@@ -1,7 +1,6 @@
 package com.example.myapplication
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -15,13 +14,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
@@ -48,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
-import androidx.compose.material3.Button
 
 // Sample data with questions and answers
 data class FaqItem(val question: String, val answer: String)
@@ -85,47 +80,47 @@ fun getContactOptions(context: android.content.Context): List<ContactOption> {
         ContactOption(
             "Call Support",
             Intent(Intent.ACTION_DIAL).apply {
-                data = Uri.parse("tel:+60132787842") // Replace with your support number
+                data = Uri.parse("tel:+60132787842")
             }
         ),
         ContactOption(
             "WhatsApp",
             Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("https://wa.me/11234567890") // Replace with your WhatsApp number
+                data = Uri.parse("https://wa.me/11234567890")
                 setPackage("com.whatsapp")
             }
         ),
         ContactOption(
             "Email",
             Intent(Intent.ACTION_SENDTO).apply {
-                data = Uri.parse("mailto:support@example.com") // Replace with your support email
+                data = Uri.parse("mailto:support@example.com")
                 putExtra(Intent.EXTRA_SUBJECT, "Support Request")
             }
         ),
         ContactOption(
             "Website",
             Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("https://www.mixue.com") // Replace with your website
+                data = Uri.parse("https://www.mixue.com")
             }
         ),
         ContactOption(
             "Facebook",
             Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("https://www.facebook.com/yourpage") // Replace with your Facebook page
+                data = Uri.parse("https://www.facebook.com/yourpage")
                 setPackage("com.facebook.katana")
             }
         ),
         ContactOption(
             "Twitter",
             Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("https://twitter.com/yourhandle") // Replace with your Twitter handle
+                data = Uri.parse("https://twitter.com/yourhandle")
                 setPackage("com.twitter.android")
             }
         ),
         ContactOption(
             "Instagram",
             Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("https://www.instagram.com/yourprofile") // Replace with your Instagram profile
+                data = Uri.parse("https://www.instagram.com/yourprofile")
                 setPackage("com.instagram.android")
             }
         )
@@ -163,7 +158,6 @@ fun HelpCenterScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(padding)
                 .background(Color.Transparent)
-                .verticalScroll(rememberScrollState()) // Add vertical scroll to the entire screen
         ) {
             // Search Bar
             TextField(
@@ -187,10 +181,12 @@ fun HelpCenterScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Content based on selected tab
-            when (selectedTab) {
-                "FAQ" -> FaqContent()
-                "Contact Us" -> ContactUsContent(context = context)
+            // Content based on selected tab - using weight to fill available space
+            Box(modifier = Modifier.weight(1f)) {
+                when (selectedTab) {
+                    "FAQ" -> FaqContent()
+                    "Contact Us" -> ContactUsContent(context = context)
+                }
             }
         }
     }
@@ -253,49 +249,41 @@ fun FaqContent() {
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        // Display FAQ items with questions and answers with scrollbar
-        Box(
+        // Removed fixed height constraint - let it expand naturally
+        LazyColumn(
+            state = scrollState,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp) // Set a fixed height or use weight if needed
+                .weight(1f) // Take all available space
         ) {
-            LazyColumn(
-                state = scrollState,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                items(faqItems) { faqItem ->
-                    // White box containing both question and answer
-                    Column(
+            items(faqItems) { faqItem ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                        .background(Color.White, RoundedCornerShape(12.dp))
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = faqItem.question,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Black
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .background(Color.White, RoundedCornerShape(12.dp))
-                            .padding(16.dp)
+                            .background(Color.LightGray, RoundedCornerShape(8.dp))
+                            .padding(12.dp)
                     ) {
-                        // Question
                         Text(
-                            text = faqItem.question,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.Black
+                            text = faqItem.answer,
+                            fontSize = 12.sp,
+                            color = Color.DarkGray
                         )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Answer in gray box with smaller text
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color.LightGray, RoundedCornerShape(8.dp))
-                                .padding(12.dp)
-                        ) {
-                            Text(
-                                text = faqItem.answer,
-                                fontSize = 12.sp,
-                                color = Color.DarkGray
-                            )
-                        }
                     }
                 }
             }
@@ -321,52 +309,44 @@ fun ContactUsContent(context: android.content.Context) {
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        // Contact options with clickable intents and scrollbar
-        Box(
+        // Removed fixed height constraint - let it expand naturally
+        LazyColumn(
+            state = scrollState,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp) // Set a fixed height or use weight if needed
+                .weight(1f) // Take all available space
         ) {
-            LazyColumn(
-                state = scrollState,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                items(contactOptions) { option ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .height(60.dp)
-                            .background(Color.White, RoundedCornerShape(12.dp))
-                            .clickable {
-                                try {
-                                    startActivity(context, option.intent, null)
-                                } catch (e: Exception) {
-                                    // Fallback to browser if app not installed
-                                    if (option.intent.`package` != null) {
-                                        val browserIntent = Intent(
-                                            Intent.ACTION_VIEW,
-                                            option.intent.data
-                                        )
-                                        startActivity(context, browserIntent, null)
-                                    }
+            items(contactOptions) { option ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .height(60.dp)
+                        .background(Color.White, RoundedCornerShape(12.dp))
+                        .clickable {
+                            try {
+                                startActivity(context, option.intent, null)
+                            } catch (e: Exception) {
+                                if (option.intent.`package` != null) {
+                                    val browserIntent = Intent(
+                                        Intent.ACTION_VIEW,
+                                        option.intent.data
+                                    )
+                                    startActivity(context, browserIntent, null)
                                 }
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = option.name,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.Black
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = option.name,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Black
+                    )
                 }
+                Spacer(modifier = Modifier.height(8.dp))
             }
-
-
         }
     }
 }

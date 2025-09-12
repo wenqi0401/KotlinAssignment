@@ -335,31 +335,4 @@ fun TopSalesItem(item: MenuItem, onItemClick: (MenuItem) -> Unit) { // Add onIte
     }
 }
 
-@Composable
-fun MenuOptionButton(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = text,
-                fontSize = 18.sp,
-                color = Color.Red,
-                modifier = Modifier.weight(1f)
-            )
-            Icon(
-                imageVector = icon,
-                contentDescription = "Navigate",
-                tint = Color.Red
-            )
-        }
-    }
-}
+
