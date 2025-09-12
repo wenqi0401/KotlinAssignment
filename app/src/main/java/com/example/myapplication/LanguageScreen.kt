@@ -106,7 +106,6 @@ fun LanguageScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState())
         ) {
             // Custom Search Bar
             Box(

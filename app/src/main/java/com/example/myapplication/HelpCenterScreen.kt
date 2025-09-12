@@ -161,7 +161,6 @@ fun HelpCenterScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(padding)
                 .background(Color.Transparent)
-                .verticalScroll(rememberScrollState())
         ) {
             // Search Bar
             TextField(

@@ -77,4 +77,17 @@ class MilkTeaMenuManager {
     fun getItemByName(name: String): MenuItem? {
         return menuItems.find { it.name == name }
     }
+    fun addItemToCart(item: MenuItem, sugar: String, ice: String, size: String = "Medium", quantity: Int = 1) {
+        CartManager.addToCart(
+            CartItem(
+                item = item,
+                quantity = quantity,
+                size = size,
+                ice = ice,
+                sugar = sugar
+            )
+        )
+    }
+
+
 }

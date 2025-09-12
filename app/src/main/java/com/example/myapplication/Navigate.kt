@@ -169,8 +169,25 @@ fun BuildNavHost(
         composable("admin_ratings") {
             AdminRatingsScreen(navController = navController)
         }
+        composable("item_detail/{itemName}") { backStackEntry ->
+            val itemName = backStackEntry.arguments?.getString("itemName") ?: ""
+            val item = menuManager.getItemByName(itemName)
+            if (item != null) {
+                ItemDetailScreen(
+                    navController = navController,
+                    item = item,
+                    snackbarHostState = snackbarHostState
+                )
+            }
+        }
     }
 }
 
-
+@Composable
+fun WithOrientationSupport(content: @Composable () -> Unit) {
+    OrientationAwareContent(
+        portraitContent = content,
+        landscapeContent = { SimpleLandscapeWrapper(content = content) }
+    )
+}
 

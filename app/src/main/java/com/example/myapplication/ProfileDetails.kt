@@ -112,7 +112,6 @@ fun UserProfileScreen(
                 .padding(paddingValues)
                 .fillMaxSize()
                 .background(Color.Transparent)
-                .verticalScroll(rememberScrollState())
         ) {
             // Profile Picture Section
             Card(
