@@ -4,7 +4,6 @@ package com.example.myapplication
 data class CartItem(
     val item: MenuItem,
     val quantity: Int,
-    val size: String,
     val ice: String,
     val sugar: String
 )
@@ -23,7 +22,6 @@ object CartManager {
         // 查找是否已存在相同配置的商品
         val existingIndex = _cartItems.indexOfFirst {
             it.item.name == cartItem.item.name &&
-                    it.size == cartItem.size &&
                     it.ice == cartItem.ice &&
                     it.sugar == cartItem.sugar
         }

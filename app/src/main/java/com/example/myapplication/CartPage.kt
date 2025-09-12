@@ -210,11 +210,6 @@ fun CartItemCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    "Size: ${cartItem.size}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-                Text(
                     "Ice: ${cartItem.ice} • Sugar: ${cartItem.sugar}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray

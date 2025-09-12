@@ -83,6 +83,12 @@ fun OrderHistoryScreen(navController: NavHostController) {
     var feedback by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
 
+    // Create product mapping using MilkTeaMenuManager
+    val menuManager = remember { MilkTeaMenuManager() }
+    val productImageMap = remember {
+        menuManager.getAllMenuItems().associate { it.name to it.imageResId }
+    }
+
     // Function to refresh orders
     suspend fun refreshOrders() {
         try {
@@ -162,7 +168,6 @@ fun OrderHistoryScreen(navController: NavHostController) {
         )
     }
 
-    // Rest of your Scaffold code remains the same...
     Scaffold(
         topBar = {
             TopAppBar(
@@ -190,7 +195,6 @@ fun OrderHistoryScreen(navController: NavHostController) {
             )
         }
     ) { padding ->
-        // Your existing UI code continues here...
         if (isLoading) {
             Box(
                 modifier = Modifier
@@ -201,9 +205,69 @@ fun OrderHistoryScreen(navController: NavHostController) {
                 CircularProgressIndicator(color = Color.Red)
             }
         } else if (errorMessage != null) {
-            // Your error UI...
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Error Loading Orders",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Red,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(
+                        text = errorMessage ?: "Unknown error",
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            isLoading = true
+                            errorMessage = null
+                            coroutineScope.launch {
+                                refreshOrders()
+                                isLoading = false
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                    ) {
+                        Text("Retry")
+                    }
+                }
+            }
         } else if (orders.isEmpty()) {
-            // Your empty state UI...
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "No Orders Yet",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(
+                        text = "Your order history will appear here",
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
         } else {
             LazyColumn(
                 modifier = Modifier
@@ -218,12 +282,10 @@ fun OrderHistoryScreen(navController: NavHostController) {
                         onRateClick = { orderToRate ->
                             currentOrderForRating = orderToRate
                             showRatingDialog = true
-                        } ,
-
-                        navController = navController
+                        },
+                        navController = navController,
+                        productImageMap = productImageMap
                     )
-
-
                 }
             }
         }
@@ -234,8 +296,8 @@ fun OrderHistoryScreen(navController: NavHostController) {
 fun OrderSummaryCard(
     order: Order,
     onRateClick: (Order) -> Unit,
-    navController: NavHostController
-
+    navController: NavHostController,
+    productImageMap: Map<String, Int>
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -244,7 +306,6 @@ fun OrderSummaryCard(
         elevation = CardDefaults.cardElevation(6.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
-
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -294,7 +355,7 @@ fun OrderSummaryCard(
             )
 
             order.items.forEach { item ->
-                OrderItemRow(orderItem = item)
+                OrderItemRow(orderItem = item, productImageMap = productImageMap)
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
@@ -412,40 +473,25 @@ fun OrderSummaryCard(
 }
 
 @Composable
-fun OrderItemRow(orderItem: OrderItem) {
-    val context = LocalContext.current
-
-    // Check if resource is valid and is a drawable type
-    val isValidDrawable = remember(orderItem.imageResId) {
-        if (orderItem.imageResId == 0) {
-            false
-        } else {
-            try {
-                val resourceType = context.resources.getResourceTypeName(orderItem.imageResId)
-                resourceType == "drawable" || resourceType == "mipmap"
-            } catch (e: Exception) {
-                Log.w("OrderItemRow", "Invalid resource ID ${orderItem.imageResId}: ${e.message}")
-                false
-            }
-        }
-    }
+fun OrderItemRow(
+    orderItem: OrderItem,
+    productImageMap: Map<String, Int>
+) {
+    // Get the resource ID from the product name mapping
+    val resourceId = productImageMap[orderItem.name] ?: R.drawable.placeholder
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (isValidDrawable) {
-            Image(
-                painter = painterResource(id = orderItem.imageResId),
-                contentDescription = orderItem.name ?: "",
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            PlaceholderBox()
-        }
+        Image(
+            painter = painterResource(id = resourceId),
+            contentDescription = orderItem.name ?: "",
+            modifier = Modifier
+                .size(50.dp)
+                .clip(RoundedCornerShape(8.dp)),
+            contentScale = ContentScale.Crop
+        )
 
         Spacer(modifier = Modifier.width(12.dp))
 
@@ -484,6 +530,7 @@ private fun PlaceholderBox() {
         Text("?", color = Color.Gray)
     }
 }
+
 @Composable
 fun PriceDetailRow(label: String, amount: Double, isDiscount: Boolean = false) {
     Row(
@@ -556,7 +603,6 @@ fun formatDate(timestamp: Long): String {
     }
 }
 
-
 @Composable
 fun RatingDialog(
     order: Order,
@@ -565,7 +611,7 @@ fun RatingDialog(
     onRatingChange: (Int) -> Unit,
     onFeedbackChange: (String) -> Unit,
     onDismiss: () -> Unit,
-    onSubmit: suspend () -> Unit // Make this suspend
+    onSubmit: suspend () -> Unit
 ) {
     var isSubmitting by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()

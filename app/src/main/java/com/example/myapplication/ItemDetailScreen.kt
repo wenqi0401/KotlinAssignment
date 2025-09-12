@@ -29,7 +29,6 @@ fun ItemDetailScreen(
 ) {
 
     var quantity by remember { mutableStateOf(1) }
-    var selectedSize by remember { mutableStateOf("Medium") }
     var selectedIceLevel by remember { mutableStateOf("Regular") }
     var selectedSugarLevel by remember { mutableStateOf("Regular") }
 
@@ -64,7 +63,6 @@ fun ItemDetailScreen(
                     val cartItem = CartItem(
                         item = item,
                         quantity = quantity,
-                        size = selectedSize,
                         ice = selectedIceLevel,
                         sugar = selectedSugarLevel
                     )
@@ -181,35 +179,6 @@ fun ItemDetailScreen(
                             ) {
                                 Text("+", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Red)
                             }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // 尺寸选择
-                Text(
-                    text = "Choose your size:",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    listOf("Large", "Medium", "Small").forEach { size ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        ) {
-                            RadioButton(
-                                selected = selectedSize == size,
-                                onClick = { selectedSize = size },
-                                colors = RadioButtonDefaults.colors(
-                                    selectedColor = Color.Red,
-                                    unselectedColor = Color.Gray
-                                )
-                            )
-                            Text(text = size, modifier = Modifier.padding(start = 8.dp))
                         }
                     }
                 }
