@@ -351,7 +351,7 @@ fun DeliveryInfoSection() {
                 contentDescription = "MIXUE Delivery",
                 modifier = Modifier
                     .size(100.dp)
-                    .clip(RoundedCornerShape(30.dp)),
+                    .clip(RoundedCornerShape(35.dp)),
                 contentScale = ContentScale.Crop
             )
 
@@ -359,8 +359,13 @@ fun DeliveryInfoSection() {
 
             Column {
                 Text(
-                    "Delivery in ~ 10 minutes",
+                    "MIXUE Delivery",
                     fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    fontSize = 20.sp
+                )
+                Text(
+                    "Delivery in ~ 15 minutes",
                     color = Color.Black,
                     fontSize = 14.sp
                 )
@@ -531,7 +536,11 @@ fun VoucherSelectionSection(
                             color = Color(0xFF4CAF50)
                         )
                         Text(
-                            "Discount: ${if (selectedVoucher.discountType == "FIXED") "RM${selectedVoucher.discountAmount.toInt()}" else "${selectedVoucher.discountAmount.toInt()}%"}",
+                            "Discount: ${if 
+                                    (selectedVoucher.discountType == "FIXED") "RM" +
+                                    "${selectedVoucher.discountAmount.toInt()}" 
+                            else 
+                                "${selectedVoucher.discountAmount.toInt()}%"}",
                             color = Color.Red,
                             fontSize = 14.sp
                         )
