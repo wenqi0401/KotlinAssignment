@@ -90,7 +90,6 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .background(Color.White)
-                .verticalScroll(rememberScrollState())
         ) {
             Card(
                 modifier = Modifier
