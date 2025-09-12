@@ -225,7 +225,7 @@ fun RatingItemCard(order: Order) {
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                "Order: ${order.orderId.take(8)}... | User: ${order.userPhoneNumber}",
+                "Order: ${order.orderId}... | User: ${order.userPhoneNumber}",
                 fontSize = 12.sp,
                 color = Color.Gray
             )

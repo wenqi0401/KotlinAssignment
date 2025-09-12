@@ -70,8 +70,7 @@ val faqItems = listOf(
 // Contact option data class with intent information
 data class ContactOption(
     val name: String,
-    val intent: Intent,
-    val icon: Int? = null // You could add icon resources here if needed
+    val intent: Intent
 )
 
 // Function to create contact options with intents
@@ -291,7 +290,6 @@ fun FaqContent() {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ContactUsContent(context: android.content.Context) {
     val contactOptions = remember { getContactOptions(context) }
