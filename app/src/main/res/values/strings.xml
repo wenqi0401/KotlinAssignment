@@ -1,3 +1,62 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">Mixue</string>
+
+    <!-- Language -->
+    <string name="language_screen_title">Language</string>
+    <string name="language_en">English</string>
+    <string name="language_ms">Malay</string>
+    <string name="apply_action">Apply</string>
+
+    <!-- Common -->
+    <string name="back">Back</string>
+
+    <!-- PaymentPage -->
+    <string name="payment_title">Payment</string>
+    <string name="phone_label">📞 Phone number *</string>
+    <string name="phone_placeholder">Enter your phone number</string>
+    <string name="phone_required_error">Phone number is required</string>
+    <string name="phone_min_error">Phone number must be at least 10 digits</string>
+
+    <string name="address_label">📍 Delivery Address *</string>
+    <string name="address_placeholder">Enter your delivery address</string>
+    <string name="address_required_error">Delivery address is required</string>
+
+    <string name="comment_label">💬 Comment to Rider</string>
+    <string name="comment_placeholder">Add a comment</string>
+
+    <string name="voucher_title">🎫 Apply Voucher</string>
+    <string name="voucher_select_prompt">Select a voucher to apply discount</string>
+    <string name="vouchers_available_count">%1$d vouchers available</string>
+
+    <string name="payment_method_title">💳 Payment Method *</string>
+    <string name="payment_method_required">Please select a payment method</string>
+    <string name="visa_card_title">Visa Card</string>
+    <string name="visa_add_card">Add card details</string>
+    <string name="visa_number_placeholder">Enter 16-digit card number</string>
+    <string name="visa_number_invalid">Please enter a valid 16-digit card number</string>
+    <string name="ewallet_title">E-Wallet</string>
+    <string name="ewallet_subtitle">Touch \'n Go \/ GrabPay.</string>
+    <string name="cash_title">Cash on Delivery</string>
+    <string name="cash_subtitle">Pay when you receive</string>
+
+    <string name="order_summary_title">🧾 Order Summary</string>
+    <string name="qty_fmt">Qty: %1$d</string>
+    <string name="subtotal">Subtotal</string>
+    <string name="delivery_fee">Delivery Fee</string>
+    <string name="tax_with_rate">Tax 6%%</string>
+    <string name="voucher">Voucher</string>
+    <string name="total_tax_label">Total (Tax)</string>
+    <string name="rm_amount">RM %1$.2f</string>
+    <string name="place_order">Place order</string>
+
+    <!-- Profile -->
+    <string name="my_profile">My Profile</string>
+    <string name="edit_personal_info">Edit your personal information</string>
+    <string name="help_center">Help Center</string>
+    <string name="logout">Logout</string>
+
+    <!-- Register -->
+    <string name="registration_error">Registration Error</string>
+    <string name="registration_success">Registration Successful!</string>
+    <string name="go_to_login">Go to Login</string>
 </resources>

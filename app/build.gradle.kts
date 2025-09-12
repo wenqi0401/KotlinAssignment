@@ -106,6 +106,9 @@ dependencies {
     // Accompanist
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
 
+    //language
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.core:core-ktx:1.13.1")
     // Firebase BOM
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-analytics")

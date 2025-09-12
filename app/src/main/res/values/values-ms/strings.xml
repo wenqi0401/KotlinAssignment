@@ -1,0 +1,63 @@
+<!-- file: app/src/main/res/values-ms/strings.xml (Malay) -->
+<resources>
+    <string name="app_name">Mixue</string>
+
+    <!-- Language -->
+    <string name="language_screen_title">Bahasa</string>
+    <string name="language_en">Inggeris</string>
+    <string name="language_ms">Melayu</string>
+    <string name="apply_action">Guna</string>
+
+    <!-- Common -->
+    <string name="back">Kembali</string>
+
+    <!-- PaymentPage -->
+    <string name="payment_title">Bayaran</string>
+    <string name="phone_label">📞 Nombor telefon *</string>
+    <string name="phone_placeholder">Masukkan nombor telefon anda</string>
+    <string name="phone_required_error">Nombor telefon diperlukan</string>
+    <string name="phone_min_error">Nombor telefon mesti sekurang‑kurangnya 10 digit</string>
+
+    <string name="address_label">📍 Alamat penghantaran *</string>
+    <string name="address_placeholder">Masukkan alamat penghantaran anda</string>
+    <string name="address_required_error">Alamat penghantaran diperlukan</string>
+
+    <string name="comment_label">💬 Komen kepada Rider</string>
+    <string name="comment_placeholder">Tambah komen</string>
+
+    <string name="voucher_title">🎫 Guna Baucar</string>
+    <string name="voucher_select_prompt">Pilih baucar untuk diskaun</string>
+    <string name="vouchers_available_count">%1$d baucar tersedia</string>
+
+    <string name="payment_method_title">💳 Kaedah Bayaran *</string>
+    <string name="payment_method_required">Sila pilih kaedah bayaran</string>
+    <string name="visa_card_title">Kad Visa</string>
+    <string name="visa_add_card">Tambah butiran kad</string>
+    <string name="visa_number_placeholder">Masukkan nombor kad 16 digit</string>
+    <string name="visa_number_invalid">Sila masukkan nombor kad 16 digit yang sah</string>
+    <string name="ewallet_title">E‑Wallet</string>
+    <string name="ewallet_subtitle">Touch \'n Go \/ GrabPay.</string>
+    <string name="cash_title">Tunai semasa penghantaran</string>
+    <string name="cash_subtitle">Bayar semasa terima</string>
+
+    <string name="order_summary_title">🧾 Ringkasan Pesanan</string>
+    <string name="qty_fmt">Kuantiti: %1$d</string>
+    <string name="subtotal">Jumlah kecil</string>
+    <string name="delivery_fee">Caj penghantaran</string>
+    <string name="tax_with_rate">Cukai 6%%</string>
+    <string name="voucher">Baucar</string>
+    <string name="total_tax_label">Jumlah (Cukai)</string>
+    <string name="rm_amount">RM %1$.2f</string>
+    <string name="place_order">Buat pesanan</string>
+
+    <!-- Profile -->
+    <string name="my_profile">Profil Saya</string>
+    <string name="edit_personal_info">Edit maklumat peribadi anda</string>
+    <string name="help_center">Pusat Bantuan</string>
+    <string name="logout">Log keluar</string>
+
+    <!-- Register -->
+    <string name="registration_error">Ralat Pendaftaran</string>
+    <string name="registration_success">Pendaftaran Berjaya!</string>
+    <string name="go_to_login">Pergi ke Log Masuk</string>
+</resources>
