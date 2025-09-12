@@ -163,8 +163,9 @@ fun HelpCenterScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(padding)
                 .background(Color.Transparent)
+                .verticalScroll(rememberScrollState()) // Add vertical scroll to the entire screen
         ) {
-
+            // Search Bar
             TextField(
                 value = searchText,
                 onValueChange = { searchText = it },
@@ -236,7 +237,6 @@ fun HelpCenterTab(title: String, isSelected: Boolean, onClick: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FaqContent() {
     val scrollState = rememberLazyListState()

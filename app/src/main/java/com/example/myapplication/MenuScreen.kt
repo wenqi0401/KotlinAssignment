@@ -135,7 +135,7 @@ fun MenuFullScreen(navController: NavHostController, menuManager: MilkTeaMenuMan
             )
         },
 
-    ) { padding ->
+        ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -274,7 +274,7 @@ fun CategoryDetailScreen(navController: NavHostController, menuManager: MilkTeaM
             )
         },
 
-    ) { padding ->
+        ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
