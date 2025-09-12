@@ -194,7 +194,9 @@ fun PaymentPage(navController: NavHostController) {
                             name = cartItem.item.name,
                             price = cartItem.item.price,
                             quantity = cartItem.quantity,
-                            imageResId = cartItem.item.imageResId
+                            imageResId = cartItem.item.imageResId,
+                            ice = cartItem.ice,
+                            sugar = cartItem.sugar
                         )
                     }
 

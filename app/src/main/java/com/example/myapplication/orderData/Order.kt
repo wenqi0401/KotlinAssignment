@@ -14,6 +14,7 @@ data class Order(
     @PrimaryKey val orderId: String,
     val userPhoneNumber: String,
     val items: List<OrderItem>,
+
     val subtotal: Double,
     val deliveryFee: Double,
     val tax: Double,
@@ -48,5 +49,8 @@ data class OrderItem(
     val name: String,
     val price: Double,
     val quantity: Int,
-    val imageResId: Int
+    val imageResId: Int,
+    val ice: String,
+    val sugar: String
+
 )

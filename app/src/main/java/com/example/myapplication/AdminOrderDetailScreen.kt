@@ -139,7 +139,27 @@ fun AdminOrderDetailScreen(
                             Text("${item.name} x${item.quantity}")
                             Text("RM ${String.format("%.2f", item.price * item.quantity)}")
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start
+                        ) {
+                            Text(
+                                "❄️ ${item.ice}",
+                                fontSize = 14.sp,
+                                color = Color(0xFF607D8B)
+                            )
+                            Text(
+                                " • ",
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                            Text(
+                                "🍯 ${item.sugar}",
+                                fontSize = 14.sp,
+                                color = Color(0xFF607D8B)
+                            )
+                        }
                     }
                 }
             }
