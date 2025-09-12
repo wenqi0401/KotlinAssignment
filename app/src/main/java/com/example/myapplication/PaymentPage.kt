@@ -4,47 +4,14 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -53,24 +20,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.myapplication.orderData.Order
-import com.example.myapplication.orderData.OrderItem
-import com.example.myapplication.orderData.OrderRepository
-import com.example.myapplication.orderData.UserSession
+import com.example.myapplication.orderData.*
 import com.example.myapplication.voucher.UserVoucherEntity
 import com.example.myapplication.voucher.VoucherEntity
 import com.example.myapplication.voucher.VoucherManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,28 +96,28 @@ fun PaymentPage(navController: NavHostController) {
 
         // Validate phone number
         if (phoneNumber.isBlank()) {
-            phoneNumberError = context.getString(R.string.phone_required_error)
+            phoneNumberError = "Phone number is required"
             isValid = false
         } else if (phoneNumber.length < 10) {
-            phoneNumberError = context.getString(R.string.phone_min_error)
+            phoneNumberError = "Phone number must be at least 10 digits"
             isValid = false
         }
 
         // Validate address
         if (address.isBlank()) {
-            addressError = context.getString(R.string.address_required_error)
+            addressError = "Delivery address is required"
             isValid = false
         }
 
         // Validate payment method
         if (selectedPaymentMethod.isBlank()) {
-            paymentMethodError = context.getString(R.string.payment_method_required)
+            paymentMethodError = "Please select a payment method"
             isValid = false
         }
 
         // Validate card number if Visa is selected
         if (selectedPaymentMethod == "visa" && cardNumber.length != 16) {
-            cardNumberError = context.getString(R.string.visa_number_invalid)
+            cardNumberError = "Please enter a valid 16-digit card number"
             isValid = false
         }
 
@@ -181,7 +143,7 @@ fun PaymentPage(navController: NavHostController) {
             TopAppBar(
                 title = {
                     Text(
-                        stringResource(R.string.payment_title),
+                        "Payment",
                         fontSize = 20.sp,
                         textAlign = TextAlign.Center,
                         color = Color.White,
@@ -192,7 +154,7 @@ fun PaymentPage(navController: NavHostController) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             Icons.Default.ArrowBack,
-                            contentDescription = stringResource(R.string.back),
+                            contentDescription = "Back",
                             tint = Color.White
                         )
                     }
@@ -278,7 +240,7 @@ fun PaymentPage(navController: NavHostController) {
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    stringResource(R.string.place_order),
+                    "Place order",
                     color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
@@ -420,7 +382,7 @@ fun PhoneNumberSection(
             .padding(vertical = 8.dp)
     ) {
         Text(
-            text = "📞 Phone Number *",
+            "📞 Phone number *",
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -429,7 +391,7 @@ fun PhoneNumberSection(
         OutlinedTextField(
             value = phoneNumber,
             onValueChange = onPhoneNumberChange,
-            placeholder = { Text(stringResource(R.string.phone_placeholder)) },
+            placeholder = { Text("Enter your phone number") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             modifier = Modifier
                 .fillMaxWidth()
@@ -543,7 +505,7 @@ fun VoucherSelectionSection(
             .padding(vertical = 8.dp)
     ) {
         Text(
-            stringResource(R.string.voucher_title),
+            "🎫 Apply Voucher",
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -581,12 +543,12 @@ fun VoucherSelectionSection(
                         )
                     } else {
                         Text(
-                            stringResource(R.string.voucher_select_prompt),
+                            "Select a voucher to apply discount",
                             color = Color.Gray,
                             fontSize = 16.sp
                         )
                         Text(
-                            stringResource(R.string.vouchers_available_count),
+                            "${userVouchers.size} vouchers available",
                             color = Color.Blue,
                             fontSize = 14.sp
                         )
@@ -623,7 +585,7 @@ fun VoucherSelectionSection(
                             }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("No voucher", fontSize = 16.sp)//no xml value
+                        Text("No voucher", fontSize = 16.sp)
                     }
 
                     if (userVouchers.isNotEmpty()) {
@@ -675,13 +637,13 @@ fun VoucherSelectionSection(
                                 )
                                 if (!isEligible) {
                                     Text(
-                                        "Min order: RM${"%.2f".format(voucher.minOrderAmount)}",//no xml value
+                                        "Min order: RM${"%.2f".format(voucher.minOrderAmount)}",
                                         fontSize = 12.sp,
                                         color = Color.Red
                                     )
                                 } else {
                                     Text(
-                                        "Valid until: ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(voucher.expiryDate))}",//no value xml
+                                        "Valid until: ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(voucher.expiryDate))}",
                                         fontSize = 12.sp,
                                         color = Color.Gray
                                     )
@@ -717,7 +679,7 @@ fun VoucherSelectionSection(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                "No vouchers available",//no xml value
+                                "No vouchers available",
                                 color = Color.Gray,
                                 textAlign = TextAlign.Center
                             )
@@ -748,7 +710,7 @@ fun PaymentMethodSection(
             .padding(vertical = 8.dp)
     ) {
         Text(
-            stringResource(R.string.payment_method_title),
+            "💳 Payment Method *",
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -758,7 +720,7 @@ fun PaymentMethodSection(
         // Visa Card Option
         PaymentOptionItem(
             emoji = "💳",
-            title = stringResource(R.string.visa_card_title),
+            title = "Visa Card",
             subtitle = if (selectedMethod == "visa" && cardNumber.isNotEmpty())
                 "Visa •••• ${cardNumber.takeLast(4)}" else "Add card details",
             isSelected = selectedMethod == "visa",
@@ -773,7 +735,7 @@ fun PaymentMethodSection(
                         onCardNumberChange(it)
                     }
                 },
-                placeholder = { Text(stringResource(R.string.visa_number_placeholder)) },
+                placeholder = { Text("Enter 16-digit card number") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -803,8 +765,8 @@ fun PaymentMethodSection(
         // E-Wallet Option
         PaymentOptionItem(
             emoji = "📱",
-            title = stringResource(R.string.ewallet_title),
-            subtitle = stringResource(R.string.ewallet_subtitle),
+            title = "E-Wallet",
+            subtitle = "Touch 'n Go / GrabPay.",
             isSelected = selectedMethod == "ewallet",
             onClick = { onMethodChange("ewallet") }
         )
@@ -814,8 +776,8 @@ fun PaymentMethodSection(
         // Cash on Delivery Option
         PaymentOptionItem(
             emoji = "💵",
-            title = stringResource(R.string.cash_title),
-            subtitle = stringResource(R.string.cash_subtitle),
+            title = "Cash on Delivery",
+            subtitle = "Pay when you receive",
             isSelected = selectedMethod == "cash",
             onClick = { onMethodChange("cash") }
         )
@@ -900,7 +862,7 @@ fun OrderSummarySection(
             .padding(vertical = 8.dp)
     ) {
         Text(
-            stringResource(R.string.order_summary_title),
+            "🧾 Order Summary",
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -932,14 +894,14 @@ fun OrderSummarySection(
                         fontSize = 16.sp
                     )
                     Text(
-                        stringResource(R.string.qty_fmt, cartItem.quantity),
+                        "Qty: ${cartItem.quantity}",
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
                 }
 
                 Text(
-                    stringResource(R.string.rm_amount, cartItem.item.price * cartItem.quantity),
+                    "RM ${"%.2f".format(cartItem.item.price * cartItem.quantity)}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
@@ -949,10 +911,10 @@ fun OrderSummarySection(
         Divider(modifier = Modifier.padding(vertical = 16.dp))
 
         // Price Breakdown
-        PriceRow(stringResource(R.string.subtotal), subtotal)
-        PriceRow(stringResource(R.string.delivery_fee), deliveryFee)
-        PriceRow(stringResource(R.string.tax_with_rate), tax)
-        PriceRow(stringResource(R.string.voucher), -voucher)
+        PriceRow("Subtotal", subtotal)
+        PriceRow("Delivery Fee", deliveryFee)
+        PriceRow("Tax 6%", tax)
+        PriceRow("Voucher", -voucher)
 
         Divider(modifier = Modifier.padding(vertical = 8.dp))
 
@@ -964,12 +926,12 @@ fun OrderSummarySection(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                stringResource(R.string.total_tax_label),
+                "Total (Tax)",
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp
             )
             Text(
-                stringResource(R.string.rm_amount, total),
+                "RM ${"%.2f".format(total)}",
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
                 color = Color.Red
@@ -995,7 +957,7 @@ fun PriceRow(label: String, amount: Double) {
             color = Color.DarkGray
         )
         Text(
-            text = stringResource(R.string.rm_amount,amount),
+            text = "RM ${"%.2f".format(amount)}",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.End
@@ -1031,7 +993,7 @@ fun OrderSuccessScreen() {
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                "Order Placed Successfully!",// no xml value
+                "Order Placed Successfully!",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -1040,7 +1002,7 @@ fun OrderSuccessScreen() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                "Your order is being prepared.\nYou will be redirected to track your order.",// no xml value
+                "Your order is being prepared.\nYou will be redirected to track your order.",
                 fontSize = 16.sp,
                 color = Color.Gray,
                 textAlign = TextAlign.Center
