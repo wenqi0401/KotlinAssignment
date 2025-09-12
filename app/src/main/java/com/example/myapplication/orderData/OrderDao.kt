@@ -27,7 +27,7 @@ interface OrderDao {
     suspend fun deleteOrder(orderId: String)
 
     @Query("SELECT AVG(rating) FROM orders WHERE rating > 0")
-    suspend fun getAverageRating(): Double
+    suspend fun getAverageRating(): Double?
 
     @Query("SELECT * FROM orders WHERE rating > 0 ORDER BY orderDate DESC")
     suspend fun getRatedOrders(): List<Order>

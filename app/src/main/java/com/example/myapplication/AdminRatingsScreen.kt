@@ -1,8 +1,11 @@
 package com.example.myapplication
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
@@ -18,7 +21,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.orderData.OrderRepository
 import com.example.myapplication.orderData.Order
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -31,16 +37,29 @@ fun AdminRatingsScreen(navController: NavController) {
     var averageRating by remember { mutableStateOf(0.0) }
     var ratingCount by remember { mutableStateOf(0) }
     var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        try {
-            ratedOrders = repository.getRatedOrders()
-            averageRating = repository.getAverageRating()
-            ratingCount = repository.getRatingCount()
-        } catch (e: Exception) {
-            // Handle error
-        } finally {
-            isLoading = false
+        coroutineScope.launch {
+            try {
+                // Load data in parallel for better performance
+                val ordersDeferred = async { repository.getRatedOrders() }
+                val avgRatingDeferred = async { repository.getAverageRating() }
+                val countDeferred = async { repository.getRatingCount() }
+
+                // Await all results
+                ratedOrders = ordersDeferred.await()
+                averageRating = avgRatingDeferred.await()
+                ratingCount = countDeferred.await()
+
+                Log.d("AdminRatings", "Loaded ${ratedOrders.size} ratings, avg: $averageRating, count: $ratingCount")
+            } catch (e: Exception) {
+                errorMessage = "Error loading ratings: ${e.message}"
+                Log.e("AdminRatings", "Error loading ratings", e)
+            } finally {
+                isLoading = false
+            }
         }
     }
 
@@ -70,71 +89,90 @@ fun AdminRatingsScreen(navController: NavController) {
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp)
-                .fillMaxSize()
-        ) {
-            if (isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else {
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (errorMessage != null) {
+            Box(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(errorMessage!!, color = Color.Red)
+            }
+        } else {
+            // Use LazyColumn for the entire content to avoid scrolling conflicts
+            LazyColumn(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 // Average Rating Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF8E1))
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF8E1))
                     ) {
-                        Text(
-                            "Average Rating",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFE65100)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            "%.1f/5".format(averageRating),
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFF9800)
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            "Based on $ratingCount ratings",
-                            fontSize = 14.sp,
-                            color = Color.Gray
-                        )
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                "Average Rating",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFE65100)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                "%.1f/5".format(averageRating),
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFF9800)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                "Based on $ratingCount ratings",
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                // Section Title
+                item {
+                    Text(
+                        "All Ratings",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
-                Text(
-                    "All Ratings",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
+                // Ratings List or Empty State
                 if (ratedOrders.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("No ratings yet", color = Color.Gray)
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No ratings yet", color = Color.Gray)
+                        }
                     }
                 } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(ratedOrders.sortedByDescending { it.orderDate }) { order ->
-                            RatingItemCard(order)
-                        }
+                    items(ratedOrders) { order ->
+                        RatingItemCard(order)
                     }
                 }
             }
@@ -158,7 +196,7 @@ fun RatingItemCard(order: Order) {
                 Row {
                     for (i in 1..5) {
                         Icon(
-                            Icons.Default.Star, // Use the same icon for both filled and outlined
+                            Icons.Default.Star,
                             contentDescription = null,
                             tint = if (i <= order.rating) Color(0xFFFFD700) else Color.LightGray,
                             modifier = Modifier.size(20.dp)

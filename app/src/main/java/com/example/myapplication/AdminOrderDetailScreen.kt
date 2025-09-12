@@ -1,7 +1,9 @@
 package com.example.myapplication
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -25,7 +27,6 @@ fun AdminOrderDetailScreen(
     var isLoading by remember { mutableStateOf(true) }
     var showUpdateDialog by remember { mutableStateOf(false) }
 
-    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(orderId) {
         order = repository.getOrderById(orderId)
@@ -59,7 +60,8 @@ fun AdminOrderDetailScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .padding(16.dp)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Card(

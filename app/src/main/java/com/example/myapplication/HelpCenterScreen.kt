@@ -3,6 +3,7 @@ package com.example.myapplication
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -83,7 +85,7 @@ fun getContactOptions(context: android.content.Context): List<ContactOption> {
         ContactOption(
             "Call Support",
             Intent(Intent.ACTION_DIAL).apply {
-                data = Uri.parse("tel:+11234567890") // Replace with your support number
+                data = Uri.parse("tel:+60132787842") // Replace with your support number
             }
         ),
         ContactOption(
@@ -103,7 +105,7 @@ fun getContactOptions(context: android.content.Context): List<ContactOption> {
         ContactOption(
             "Website",
             Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("https://www.example.com") // Replace with your website
+                data = Uri.parse("https://www.mixue.com") // Replace with your website
             }
         ),
         ContactOption(
@@ -161,8 +163,9 @@ fun HelpCenterScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(padding)
                 .background(Color.Transparent)
+                .verticalScroll(rememberScrollState())
         ) {
-            // Search Bar
+
             TextField(
                 value = searchText,
                 onValueChange = { searchText = it },
@@ -234,8 +237,11 @@ fun HelpCenterTab(title: String, isSelected: Boolean, onClick: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FaqContent() {
+    val scrollState = rememberLazyListState()
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -248,42 +254,49 @@ fun FaqContent() {
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        // Display FAQ items with questions and answers
-        LazyColumn(
+        // Display FAQ items with questions and answers with scrollbar
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(400.dp) // Set a fixed height or use weight if needed
         ) {
-            items(faqItems) { faqItem ->
-                // White box containing both question and answer
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                        .background(Color.White, RoundedCornerShape(12.dp))
-                        .padding(16.dp)
-                ) {
-                    // Question
-                    Text(
-                        text = faqItem.question,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Answer in gray box with smaller text
-                    Box(
+            LazyColumn(
+                state = scrollState,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                items(faqItems) { faqItem ->
+                    // White box containing both question and answer
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color.LightGray, RoundedCornerShape(8.dp))
-                            .padding(12.dp)
+                            .padding(vertical = 8.dp)
+                            .background(Color.White, RoundedCornerShape(12.dp))
+                            .padding(16.dp)
                     ) {
+                        // Question
                         Text(
-                            text = faqItem.answer,
-                            fontSize = 12.sp,
-                            color = Color.DarkGray
+                            text = faqItem.question,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black
                         )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Answer in gray box with smaller text
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color.LightGray, RoundedCornerShape(8.dp))
+                                .padding(12.dp)
+                        ) {
+                            Text(
+                                text = faqItem.answer,
+                                fontSize = 12.sp,
+                                color = Color.DarkGray
+                            )
+                        }
                     }
                 }
             }
@@ -291,9 +304,11 @@ fun FaqContent() {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ContactUsContent(context: android.content.Context) {
     val contactOptions = remember { getContactOptions(context) }
+    val scrollState = rememberLazyListState()
 
     Column(
         modifier = Modifier
@@ -307,43 +322,52 @@ fun ContactUsContent(context: android.content.Context) {
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        // Contact options with clickable intents
-        LazyColumn(
+        // Contact options with clickable intents and scrollbar
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(400.dp) // Set a fixed height or use weight if needed
         ) {
-            items(contactOptions) { option ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .height(60.dp)
-                        .background(Color.White, RoundedCornerShape(12.dp))
-                        .clickable {
-                            try {
-                                startActivity(context, option.intent, null)
-                            } catch (e: Exception) {
-                                // Fallback to browser if app not installed
-                                if (option.intent.`package` != null) {
-                                    val browserIntent = Intent(
-                                        Intent.ACTION_VIEW,
-                                        option.intent.data
-                                    )
-                                    startActivity(context, browserIntent, null)
+            LazyColumn(
+                state = scrollState,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                items(contactOptions) { option ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .height(60.dp)
+                            .background(Color.White, RoundedCornerShape(12.dp))
+                            .clickable {
+                                try {
+                                    startActivity(context, option.intent, null)
+                                } catch (e: Exception) {
+                                    // Fallback to browser if app not installed
+                                    if (option.intent.`package` != null) {
+                                        val browserIntent = Intent(
+                                            Intent.ACTION_VIEW,
+                                            option.intent.data
+                                        )
+                                        startActivity(context, browserIntent, null)
+                                    }
                                 }
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = option.name,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black
-                    )
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = option.name,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
-                Spacer(modifier = Modifier.height(8.dp))
             }
+
+
         }
     }
 }
