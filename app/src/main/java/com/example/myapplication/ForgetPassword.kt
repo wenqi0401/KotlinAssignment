@@ -38,6 +38,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,6 +56,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.delay
+import kotlin.collections.get
+import kotlin.compareTo
+import kotlin.toString
 
 @Composable
 fun ForgetPasswordScreen(
@@ -311,11 +315,12 @@ fun PhoneInputStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswordUi
 
 @Composable
 fun OTPVerificationStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswordUiState) {
-    var countdown by remember { mutableStateOf(60) }
+    var countdown by rememberSaveable { mutableStateOf(60) }
 
-    LaunchedEffect(Unit) {
-        while (countdown > 0) {
-            delay(1000)
+    // One-second ticker tied to countdown
+    LaunchedEffect(countdown) {
+        if (countdown > 0) {
+            kotlinx.coroutines.delay(1000)
             countdown--
         }
     }
@@ -341,9 +346,7 @@ fun OTPVerificationStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPassw
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             repeat(6) { index ->
                 OutlinedTextField(
                     value = if (index < uiState.otpCode.length) uiState.otpCode[index].toString() else "",
@@ -382,7 +385,7 @@ fun OTPVerificationStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPassw
             TextButton(
                 onClick = {
                     viewModel.sendOTP()
-                    countdown = 60
+                    countdown = 60 // restart the timer
                 }
             ) {
                 Text(
