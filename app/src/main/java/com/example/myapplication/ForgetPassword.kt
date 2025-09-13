@@ -444,7 +444,7 @@ fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswor
         )
 
         Text(
-            text = "Your new password must be different from previous passwords",
+            text = "Please reset your password ",
             fontSize = 14.sp,
             color = Color.Gray,
             textAlign = TextAlign.Center
