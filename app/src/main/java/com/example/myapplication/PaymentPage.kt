@@ -41,7 +41,8 @@ fun PaymentPage(navController: NavHostController) {
     val context = LocalContext.current
     val voucherManager = remember { VoucherManager.getInstance(context) }
     val coroutineScope = rememberCoroutineScope()
-
+    val firebaseService = remember { FirebaseService() }
+    val repository = remember { OrderRepository(context, firebaseService) }
     val cartItems = CartManager.getItems()
     val subtotal = CartManager.calculateTotal()
     val deliveryFee = 4.73
@@ -165,7 +166,6 @@ fun PaymentPage(navController: NavHostController) {
             )
         },
         bottomBar = {
-            val repository = remember { OrderRepository(context) }
 
             Button(
                 onClick = {

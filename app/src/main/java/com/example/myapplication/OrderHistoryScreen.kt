@@ -60,6 +60,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.myapplication.orderData.FirebaseService
 import com.example.myapplication.orderData.Order
 import com.example.myapplication.orderData.OrderItem
 import com.example.myapplication.orderData.OrderRepository
@@ -73,7 +74,8 @@ import java.util.Locale
 @Composable
 fun OrderHistoryScreen(navController: NavHostController) {
     val context = LocalContext.current
-    val repository = remember { OrderRepository(context) }
+    val firebaseService = remember { FirebaseService() }
+    val repository = remember { OrderRepository(context, firebaseService) }
     var orders by remember { mutableStateOf<List<Order>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }

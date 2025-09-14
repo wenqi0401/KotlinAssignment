@@ -15,6 +15,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.myapplication.orderData.FirebaseService
 import com.example.myapplication.orderData.OrderRepository
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -143,17 +144,25 @@ fun BuildNavHost(
             AdminDashboardScreen(navController = navController)
         }
         composable("admin_order_management") {
+            val context = LocalContext.current
+            val firebaseService = remember { FirebaseService() }
+            val repository = remember { OrderRepository(context, firebaseService) }
+
             AdminOrderListScreen(
                 navController,
-                repository = OrderRepository(LocalContext.current)
+                repository = repository
             )
         }
         composable("admin_order_detail/{orderId}") { backStackEntry ->
             val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
+            val context = LocalContext.current
+            val firebaseService = remember { FirebaseService() }
+            val repository = remember { OrderRepository(context, firebaseService) }
+
             AdminOrderDetailScreen(
                 navController,
                 orderId,
-                repository = OrderRepository(LocalContext.current)
+                repository = repository
             )
         }
         composable("help_center") {
