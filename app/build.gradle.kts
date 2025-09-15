@@ -97,6 +97,7 @@ dependencies {
     implementation(libs.androidx.runtime.saveable)
     implementation(libs.androidx.ui.text)
     implementation(libs.androidx.animation.core.lint)
+    implementation(libs.foundation)
     kapt("androidx.room:room-compiler:2.6.1")
 
     // Coroutines

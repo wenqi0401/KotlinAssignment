@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.AlertDialog
@@ -42,8 +44,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -68,6 +72,7 @@ fun Register(
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
     val uiState = viewModel.uiState.collectAsState()
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     // Handle registration result - ONLY show dialogs, no navigation here
     LaunchedEffect(uiState.value.errorMessage, uiState.value.isLoading, registrationAttempted) {
@@ -153,7 +158,10 @@ fun Register(
                     // 手机号输入框
                     OutlinedTextField(
                         value = uiState.value.phoneNumber,
-                        onValueChange = { viewModel.setPhoneNumber(it) },
+                        onValueChange = { input ->
+                            val filtered = input.filter { it != ' ' && it != '\n' }
+                            viewModel.setPhoneNumber(filtered)
+                        },
                         label = { Text("Phone Number") },
                         placeholder = { Text("e.g., 0123456789") },
                         leadingIcon = {
@@ -165,7 +173,13 @@ fun Register(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !uiState.value.isLoading,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Phone,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { keyboardController?.hide() }
+                        ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFE53E3E),
                             focusedLabelColor = Color(0xFFE53E3E),
@@ -185,7 +199,10 @@ fun Register(
                     // 密码输入框
                     OutlinedTextField(
                         value = uiState.value.password,
-                        onValueChange = { viewModel.setPassword(it) },
+                        onValueChange = { input ->
+                            val filtered = input.filter { it != ' ' && it != '\n' }
+                            viewModel.setPassword(filtered)
+                        },
                         label = { Text("Create Password") },
                         placeholder = { Text("Min 8 chars, letters & numbers") },
                         leadingIcon = {
@@ -196,7 +213,7 @@ fun Register(
                             )
                         },
                         trailingIcon = {
-                            val image = if (passwordVisible) Icons.Default.Lock else Icons.Default.Lock
+                            val image = if (passwordVisible) Icons.Default.Lock else Icons.Default.Done
                             val description = if (passwordVisible) "Hide password" else "Show password"
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(imageVector = image, contentDescription = description)
@@ -205,6 +222,13 @@ fun Register(
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !uiState.value.isLoading,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { keyboardController?.hide() }
+                        ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFE53E3E),
                             focusedLabelColor = Color(0xFFE53E3E),
@@ -221,10 +245,12 @@ fun Register(
                         }
                     )
 
-                    // 确认密码输入框
+                    // Confirm password field
                     OutlinedTextField(
                         value = confirmPassword,
-                        onValueChange = { confirmPassword = it },
+                        onValueChange = { input ->
+                            confirmPassword = input.filter { it != ' ' && it != '\n' }
+                        },
                         label = { Text("Confirm Password") },
                         placeholder = { Text("Re-enter your password") },
                         leadingIcon = {
@@ -235,7 +261,7 @@ fun Register(
                             )
                         },
                         trailingIcon = {
-                            val image = if (confirmPasswordVisible) Icons.Default.Lock else Icons.Default.Lock
+                            val image = if (confirmPasswordVisible) Icons.Default.Lock else Icons.Default.Done
                             val description = if (confirmPasswordVisible) "Hide password" else "Show password"
                             IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                                 Icon(imageVector = image, contentDescription = description)
@@ -244,6 +270,13 @@ fun Register(
                         visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !uiState.value.isLoading,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { keyboardController?.hide() }
+                        ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFE53E3E),
                             focusedLabelColor = Color(0xFFE53E3E),

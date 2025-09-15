@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -45,8 +47,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -66,6 +71,7 @@ fun LoginScreen(
     viewModel: AuthViewModel = viewModel()
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     var showErrorDialog by remember { mutableStateOf(false) }
     val uiState = viewModel.uiState.collectAsState()
@@ -150,7 +156,10 @@ fun LoginScreen(
                     // 手机号输入框
                     OutlinedTextField(
                         value = uiState.value.phoneNumber,
-                        onValueChange = { viewModel.setPhoneNumber(it) },
+                        onValueChange = { input ->
+                            // Remove spaces and newlines
+                            val filtered = input.filter { it != ' ' && it != '\n' }
+                            viewModel.setPhoneNumber(filtered) },
                         label = { Text("Phone Number") },
                         placeholder = { Text("e.g. 012345678901") },
                         leadingIcon = {
@@ -160,6 +169,13 @@ fun LoginScreen(
                                 tint = Color(0xFFE53E3E)
                             )
                         },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Phone,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { keyboardController?.hide() }
+                        ),
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !uiState.value.isLoading,
                         colors = OutlinedTextFieldDefaults.colors(
@@ -174,7 +190,11 @@ fun LoginScreen(
                     // 密码输入框
                     OutlinedTextField(
                         value = uiState.value.password,
-                        onValueChange = { viewModel.setPassword(it) },
+                        onValueChange = {  input ->
+                            // Remove spaces and newlines
+                            val filtered = input.filter { it != ' ' && it != '\n' }
+                            viewModel.setPassword(filtered)
+                                        },
                         label = { Text("Password") },
                         placeholder = { Text("At least 8 chars, letters & numbers") },
                         leadingIcon = {
@@ -192,6 +212,13 @@ fun LoginScreen(
                             }
                         },
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { keyboardController?.hide() }
+                        ),
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !uiState.value.isLoading,
                         colors = OutlinedTextFieldDefaults.colors(

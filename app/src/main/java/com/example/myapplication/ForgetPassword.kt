@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -47,8 +48,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -156,9 +159,11 @@ fun ForgetPasswordScreen(
                         ForgetPasswordStep.PHONE_INPUT -> {
                             PhoneInputStep(viewModel, uiState.value)
                         }
+
                         ForgetPasswordStep.OTP_VERIFICATION -> {
                             OTPVerificationStep(viewModel, uiState.value)
                         }
+
                         ForgetPasswordStep.PASSWORD_RESET -> {
                             PasswordResetStep(viewModel, uiState.value)
                         }
@@ -239,6 +244,7 @@ fun PhoneInputStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswordUi
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        val keyboardController = LocalSoftwareKeyboardController.current
         Text(
             text = "Enter your phone number",
             fontSize = 18.sp,
@@ -268,7 +274,17 @@ fun PhoneInputStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswordUi
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isLoading,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Phone,
+                imeAction = ImeAction.Done
+            ),
+
+            //hide keyboard when done
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    keyboardController?.hide()
+                }
+            ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFFE53E3E),
                 focusedLabelColor = Color(0xFFE53E3E),
@@ -430,6 +446,8 @@ fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswor
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -451,7 +469,10 @@ fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswor
 
         OutlinedTextField(
             value = uiState.newPassword,
-            onValueChange = { viewModel.setNewPassword(it) },
+            onValueChange = { input ->
+                val filtered = input.filter { it != ' ' && it != '\n' }
+                viewModel.setNewPassword(filtered)
+            },
             label = { Text("New Password") },
             placeholder = { Text("Min 8 characters") },
             leadingIcon = {
@@ -471,6 +492,13 @@ fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswor
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isLoading,
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { keyboardController?.hide() }
+            ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFFE53E3E),
                 focusedLabelColor = Color(0xFFE53E3E),
@@ -482,7 +510,9 @@ fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswor
 
         OutlinedTextField(
             value = confirmPassword,
-            onValueChange = { confirmPassword = it },
+            onValueChange = { input ->
+                confirmPassword = input.filter { it != ' ' && it != '\n' }
+            },
             label = { Text("Confirm Password") },
             placeholder = { Text("Re-enter new password") },
             leadingIcon = {
@@ -502,6 +532,13 @@ fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswor
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isLoading,
             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { keyboardController?.hide() }
+            ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFFE53E3E),
                 focusedLabelColor = Color(0xFFE53E3E),
