@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
@@ -27,9 +28,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -50,15 +51,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.delay
-import kotlin.collections.get
-import kotlin.compareTo
-import kotlin.toString
 
 @Composable
 fun ForgetPasswordScreen(
@@ -430,7 +428,8 @@ fun OTPVerificationStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPassw
 @Composable
 fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswordUiState) {
     var confirmPassword by remember { mutableStateOf("") }
-
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -462,9 +461,16 @@ fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswor
                     tint = Color(0xFFE53E3E)
                 )
             },
+            trailingIcon = {
+                val image = if (passwordVisible) Icons.Default.Lock else Icons.Default.Done
+                val description = if (passwordVisible) "Hide password" else "Show password"
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(imageVector = image, contentDescription = description)
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isLoading,
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFFE53E3E),
                 focusedLabelColor = Color(0xFFE53E3E),
@@ -486,9 +492,16 @@ fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswor
                     tint = Color(0xFFE53E3E)
                 )
             },
+            trailingIcon = {
+                val image = if (confirmPasswordVisible) Icons.Default.Lock else Icons.Default.Done
+                val description = if (confirmPasswordVisible) "Hide password" else "Show password"
+                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                    Icon(imageVector = image, contentDescription = description)
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isLoading,
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFFE53E3E),
                 focusedLabelColor = Color(0xFFE53E3E),
