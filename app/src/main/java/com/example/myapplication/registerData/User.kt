@@ -7,7 +7,8 @@ data class User(
     val password: String = "",
     val name: String = "User",
     val gender: String = "Male",
-    val profilePicturePath: String? = null
+    val profilePicturePath: String? = null,
+    val address : String = ""
 ) {
     // Helper function to convert to Map for Firestore
     fun toMap(): Map<String, Any?> {
@@ -17,7 +18,8 @@ data class User(
             "password" to password,
             "name" to name,
             "gender" to gender,
-            "profilePicturePath" to profilePicturePath
+            "profilePicturePath" to profilePicturePath,
+            "address" to address
         )
     }
 
@@ -30,7 +32,8 @@ data class User(
                 password = map["password"] as? String ?: "",
                 name = map["name"] as? String ?: "User",
                 gender = map["gender"] as? String ?: "Male",
-                profilePicturePath = map["profilePicturePath"] as? String
+                profilePicturePath = map["profilePicturePath"] as? String,
+                address = map["address"] as? String ?: ""
             )
         }
     }

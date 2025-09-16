@@ -4,6 +4,8 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.tasks.await
 
 class UserRepository {
@@ -11,11 +13,43 @@ class UserRepository {
     private val usersCollection = db.collection("users")
     private val TAG = "UserRepository"
 
+    suspend fun getAllUsers(): List<User> {
+        return try {
+            val snapshot = db.collection("users").get().await()
+            snapshot.documents.mapNotNull { doc ->
+                doc.toObject(User::class.java)?.copy(id = doc.id)
+            }
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Failed to get all users", e)
+            emptyList()
+        }
+    }
 
+
+    fun listenUserById(
+        userId: String,
+        onUser: (User?) -> Unit,
+        onError: (FirebaseFirestoreException) -> Unit = {}
+    ): ListenerRegistration {
+        val docRef = usersCollection.document(userId)
+        return docRef.addSnapshotListener { snap, e ->
+            if (e != null) {
+                onError(e)
+                return@addSnapshotListener
+            }
+            if (snap != null && snap.exists()) {
+                val data = snap.data
+                onUser(if (data != null) User.fromMap(data) else null)
+            } else {
+                onUser(null)
+            }
+        }
+    }
 
     suspend fun updateUserName(userId: String, name: String) {
         usersCollection.document(userId).update("name", name).await()
     }
+
 
     suspend fun updateUserGender(userId: String, gender: String) {
         usersCollection.document(userId).update("gender", gender).await()
@@ -107,6 +141,9 @@ class UserRepository {
             Log.e(TAG, "Error getting user by phone: ${e.message}")
             null
         }
+    }
+    suspend fun updateUserAddress(userId: String, address: String) {
+        usersCollection.document(userId).update("address", address).await()
     }
 
 

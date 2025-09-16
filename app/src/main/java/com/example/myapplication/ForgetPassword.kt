@@ -240,6 +240,8 @@ fun ForgetPasswordScreen(
 
 @Composable
 fun PhoneInputStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswordUiState) {
+    val phoneError = viewModel.validatePhoneNumber(uiState.phoneNumber)
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -291,6 +293,15 @@ fun PhoneInputStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswordUi
                 cursorColor = Color(0xFFE53E3E),
                 focusedLeadingIconColor = Color(0xFFE53E3E)
             ),
+            isError = phoneError != null,
+            supportingText = {
+
+                Text(
+                    text = phoneError ?: "10-15 digits required only",
+                    color = if (phoneError != null) Color(0xFFE53E3E) else Color.Gray,
+                    fontSize = 12.sp
+                )
+            },
             shape = RoundedCornerShape(16.dp)
         )
 
@@ -447,6 +458,9 @@ fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswor
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val passwordError = viewModel.validatePassword(uiState.newPassword)
+    val confirmPasswordError = viewModel.validateConfirmPassword(uiState.newPassword, confirmPassword)
+
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -505,6 +519,14 @@ fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswor
                 cursorColor = Color(0xFFE53E3E),
                 focusedLeadingIconColor = Color(0xFFE53E3E)
             ),
+            isError = passwordError != null,
+            supportingText = {
+                Text(
+                    text = passwordError ?: "Use at least 8 characters with letters and numbers",
+                    color = if (passwordError != null) Color(0xFFE53E3E) else Color.Gray,
+                    fontSize = 12.sp
+                )
+            },
             shape = RoundedCornerShape(16.dp)
         )
 
@@ -545,6 +567,15 @@ fun PasswordResetStep(viewModel: ForgetPasswordViewModel, uiState: ForgetPasswor
                 cursorColor = Color(0xFFE53E3E),
                 focusedLeadingIconColor = Color(0xFFE53E3E)
             ),
+            isError = confirmPasswordError != null,
+            supportingText = {
+
+                Text(
+                    text = confirmPasswordError ?: "Both passwords must match",
+                    color = if (confirmPasswordError != null) Color(0xFFE53E3E) else Color.Gray,
+                    fontSize = 12.sp
+                )
+            },
             shape = RoundedCornerShape(16.dp)
         )
 

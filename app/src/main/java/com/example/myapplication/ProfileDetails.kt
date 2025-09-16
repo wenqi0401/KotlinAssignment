@@ -73,6 +73,7 @@ fun UserProfileScreen(
     var showNameDialog by remember { mutableStateOf(false) }
     var showGenderDialog by remember { mutableStateOf(false) }
 
+    var showAddressDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         if (!authViewModel.isUserLoggedIn()) {
             authViewModel.hydrateFromSession()
@@ -173,6 +174,13 @@ fun UserProfileScreen(
                         value = uiState.currentUser?.gender ?: "Male",
                         onClick = { showGenderDialog = true }
                     )
+                    Divider(color = Color.White.copy(alpha = 0.2f))
+
+                    ProfileInfoRow(
+                        label = "Address",
+                        value = uiState.currentUser?.address?.takeIf { it.isNotBlank() } ?: "Not set",
+                        onClick = { showAddressDialog = true }
+                    )
                 }
             }
 
@@ -208,6 +216,13 @@ fun UserProfileScreen(
             currentGender = uiState.currentUser?.gender ?: "Male",
             onDismiss = { showGenderDialog = false },
             authViewModel = authViewModel
+        )
+    }
+    if (showAddressDialog) {
+        EditAddressDialog(
+            currentAddress = uiState.currentUser?.address ?: "",
+            onDismiss = { showAddressDialog = false },
+            viewModel = authViewModel
         )
     }
 }
@@ -416,4 +431,48 @@ private fun copyImageToInternalStorage(context: Context, uri: Uri): String {
         Log.e("ProfileImage", "Error copying image: ${e.message}")
         throw e
     }
+}
+@Composable
+fun EditAddressDialog(
+    currentAddress: String,
+    onDismiss: () -> Unit,
+    viewModel: AuthViewModel = viewModel(),
+) {
+    var address by remember { mutableStateOf(currentAddress) }
+    val uiState by viewModel.uiState.collectAsState()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Address") },
+        text = {
+            OutlinedTextField(
+                value = address,
+                onValueChange = { address = it },
+                label = { Text("Address") },
+                placeholder = { Text("Enter your address") },
+                maxLines = 3,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    viewModel.updateUserAddress(address.trim())
+                    onDismiss()
+                },
+                enabled = !uiState.isLoading
+            ) {
+                if (uiState.isLoading) {
+                    Text("Saving...")
+                } else {
+                    Text("Save")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }

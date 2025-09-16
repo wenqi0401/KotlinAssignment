@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.registerData.UserRepository
+import com.example.myapplication.registerData.UserSyncRepository
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
@@ -33,7 +34,9 @@ data class ForgetPasswordUiState(
     val passwordResetSuccess: Boolean = false
 )
 
-class ForgetPasswordViewModel : ViewModel() {
+class ForgetPasswordViewModel(
+    private val syncRepo: UserSyncRepository= com.example.myapplication.di.ServiceLocator.userSyncRepository,
+) : ViewModel() {
     private val repository = UserRepository()
     private val _uiState = MutableStateFlow(ForgetPasswordUiState())
     val uiState: StateFlow<ForgetPasswordUiState> = _uiState.asStateFlow()
@@ -69,38 +72,39 @@ class ForgetPasswordViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(otpCode = cleanOTP)
     }
 
-    private val phoneAuthCallbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-        override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-            // Auto-verification completed
-            Log.d("ForgetPasswordViewModel", "Verification completed automatically")
-            val smsCode = credential.smsCode
-            if (smsCode != null) {
-                _uiState.value = _uiState.value.copy(otpCode = smsCode)
-                verifyOTP()
+    private val phoneAuthCallbacks =
+        object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+            override fun onVerificationCompleted(credential: PhoneAuthCredential) {
+                // Auto-verification completed
+                Log.d("ForgetPasswordViewModel", "Verification completed automatically")
+                val smsCode = credential.smsCode
+                if (smsCode != null) {
+                    _uiState.value = _uiState.value.copy(otpCode = smsCode)
+                    verifyOTP()
+                }
+            }
+
+            override fun onVerificationFailed(e: FirebaseException) {
+                Log.e("ForgetPasswordViewModel", "Verification failed", e)
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = "SMS verification failed: ${e.message}"
+                )
+            }
+
+            override fun onCodeSent(
+                verificationId: String,
+                token: PhoneAuthProvider.ForceResendingToken
+            ) {
+                Log.d("ForgetPasswordViewModel", "OTP sent to ${_uiState.value.phoneNumber}")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    verificationId = verificationId,
+                    currentStep = ForgetPasswordStep.OTP_VERIFICATION,
+                    otpCode = ""
+                )
             }
         }
-
-        override fun onVerificationFailed(e: FirebaseException) {
-            Log.e("ForgetPasswordViewModel", "Verification failed", e)
-            _uiState.value = _uiState.value.copy(
-                isLoading = false,
-                errorMessage = "SMS verification failed: ${e.message}"
-            )
-        }
-
-        override fun onCodeSent(
-            verificationId: String,
-            token: PhoneAuthProvider.ForceResendingToken
-        ) {
-            Log.d("ForgetPasswordViewModel", "OTP sent to ${_uiState.value.phoneNumber}")
-            _uiState.value = _uiState.value.copy(
-                isLoading = false,
-                verificationId = verificationId,
-                currentStep = ForgetPasswordStep.OTP_VERIFICATION,
-                otpCode = ""
-            )
-        }
-    }
 
     fun sendOTP() {
         viewModelScope.launch {
@@ -180,7 +184,11 @@ class ForgetPasswordViewModel : ViewModel() {
                                 currentStep = ForgetPasswordStep.PASSWORD_RESET
                             )
                         } else {
-                            Log.e("ForgetPasswordViewModel", "OTP verification failed", task.exception)
+                            Log.e(
+                                "ForgetPasswordViewModel",
+                                "OTP verification failed",
+                                task.exception
+                            )
                             _uiState.value = _uiState.value.copy(
                                 isLoading = false,
                                 errorMessage = "Invalid OTP. Please try again."
@@ -201,33 +209,22 @@ class ForgetPasswordViewModel : ViewModel() {
     fun resetPassword() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
-
             try {
                 val user = repository.checkIfUserExists(_uiState.value.phoneNumber)
-                Log.d("ForgetPasswordViewModel", "User found: ${user != null}")
-
                 if (user != null) {
-                    Log.d("ForgetPasswordViewModel", "About to update password for user: ${user.id}")
-
-                    repository.updateUserPassword(user.id, _uiState.value.newPassword)
-                    Log.d("ForgetPasswordViewModel", "Password reset successfully for user: ${user.id}")
-
+                    // Write-through: Firebase -> Room
+                    syncRepo.updateUserPassword(user.id, _uiState.value.newPassword)
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         passwordResetSuccess = true
                     )
-                    Log.d("ForgetPasswordViewModel", "passwordResetSuccess set to: ${_uiState.value.passwordResetSuccess}")
-
                 } else {
-                    Log.e("ForgetPasswordViewModel", "User not found for phone: ${_uiState.value.phoneNumber}")
-
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = "User not found"
                     )
                 }
             } catch (e: Exception) {
-                Log.e("ForgetPasswordViewModel", "Password reset failed", e)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     errorMessage = "Password reset failed: ${e.message}"
@@ -236,10 +233,41 @@ class ForgetPasswordViewModel : ViewModel() {
         }
     }
 
+
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
+
     fun clearSuccessState() {
         _uiState.value = _uiState.value.copy(passwordResetSuccess = false)
     }
+
+    fun validatePhoneNumber(phone: String): String? {
+        return when {
+            phone.isEmpty() -> "Phone number is required"
+            !phone.matches(Regex("^\\d{10,15}$")) -> "Phone number must be 10-15 digits"
+            else -> null
+        }
+    }
+
+    fun validatePassword(password: String): String? {
+        return when {
+            password.isEmpty() -> "Password is required"
+            password.length < 8 -> "Password must be at least 8 characters"
+            !password.any { it.isDigit() } || !password.any { it.isLetter() } ->
+                "Password must contain letters and numbers"
+
+            else -> null
+        }
+    }
+
+    fun validateConfirmPassword(password: String, confirmPassword: String): String? {
+        return when {
+            confirmPassword.isEmpty() -> "Please confirm your password"
+            password != confirmPassword -> "Passwords do not match"
+            else -> null
+        }
+    }
+
 }
+

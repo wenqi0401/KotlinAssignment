@@ -3,6 +3,7 @@ package com.example.myapplication
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.di.ServiceLocator
 import com.example.myapplication.orderData.UserSession
 import com.example.myapplication.registerData.User
 import com.example.myapplication.registerData.UserRepository
@@ -16,7 +17,78 @@ class AuthViewModel : ViewModel() {
     private val repository = UserRepository() // This uses Firebase
     private val _uiState = MutableStateFlow(loginUiState())
     val uiState: StateFlow<loginUiState> = _uiState.asStateFlow()
+    private val syncRepo get()= ServiceLocator.userSyncRepository
+    // Call this after successful login
+    fun onLoginSuccess(userId: String) {
+        viewModelScope.launch {
+            syncRepo.seedLocalFromRemote(userId)
+            syncRepo.startSync(userId)
+        }
+    }
+    fun updateUserAddress(newAddress: String) {
+        val currentUser = _uiState.value.currentUser
+        if (currentUser != null) {
+            val updatedUser = currentUser.copy(address = newAddress)
 
+            viewModelScope.launch {
+                try {
+                    _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+
+                    // Update in Firebase
+                    repository.updateUserAddress(currentUser.id, newAddress)
+
+                    // Update local state
+                    _uiState.value = _uiState.value.copy(
+                        currentUser = updatedUser,
+                        isLoading = false
+                    )
+
+                    // Update session
+                    UserSession.setCurrentUser(updatedUser.phoneNumber)
+
+                    Log.d("AuthViewModel", "User address updated successfully")
+                } catch (e: Exception) {
+                    Log.e("AuthViewModel", "Failed to update user address", e)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "Failed to update address: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    // Add this method to sync all existing Firebase data on app startup
+    fun initializeLocalDatabase() {
+        viewModelScope.launch {
+            try {
+                Log.d("AuthViewModel", "Initializing local database with Firebase data")
+                syncRepo.syncAllUsersFromFirebaseToRoom()
+                Log.d("AuthViewModel", "Local database initialization completed")
+            } catch (e: Exception) {
+                Log.e("AuthViewModel", "Failed to initialize local database", e)
+            }
+        }
+    }
+
+    // Optional: Method to force refresh all data
+    fun refreshAllDataFromFirebase() {
+        viewModelScope.launch {
+            try {
+                Log.d("AuthViewModel", "Refreshing all data from Firebase")
+                syncRepo.syncAllUsersFromFirebaseToRoom()
+                Log.d("AuthViewModel", "Data refresh completed")
+            } catch (e: Exception) {
+                Log.e("AuthViewModel", "Failed to refresh data from Firebase", e)
+            }
+        }
+    }
+
+    // Call this on logout
+    fun onLogout() {
+        syncRepo.stopSync()
+        // clear local session/state as needed
+    }
     fun setPhoneNumber(phoneNumber: String) {
         _uiState.value = _uiState.value.copy(phoneNumber = phoneNumber)
     }
@@ -44,6 +116,8 @@ class AuthViewModel : ViewModel() {
                 val savedUser = newUser.copy(id = userId)
 
                 UserSession.setCurrentUser(savedUser.phoneNumber)
+                onLoginSuccess(userId) // Start syncing after registration
+                Log.d("AuthViewModel", "User registered successfully: ${savedUser.name}")
                 _uiState.value = _uiState.value.copy(
                     isLoggedIn = true,
                     currentUser = savedUser,
@@ -73,6 +147,7 @@ class AuthViewModel : ViewModel() {
 
                 if (user != null) {
                     UserSession.setCurrentUser(user.phoneNumber)
+                    onLoginSuccess(user.id) // Start syncing after login
                     Log.d("AuthViewModel", "User logged in successfully: ${user.name}")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -278,4 +353,32 @@ class AuthViewModel : ViewModel() {
             }
         }
     }
+    // In AuthViewModel.kt
+    fun validatePhoneNumber(phone: String): String? {
+        return when {
+            phone.isEmpty() -> "Phone number is required"
+            !phone.matches(Regex("^\\d{10,15}$")) -> "Phone number must be 10-15 digits"
+            else -> null
+        }
+    }
+
+    fun validatePassword(password: String): String? {
+        return when {
+            password.isEmpty() -> "Password is required"
+            password.length < 8 -> "Password must be at least 8 characters"
+            !password.any { it.isDigit() } || !password.any { it.isLetter() } ->
+                "Password must contain letters and numbers"
+            else -> null
+        }
+    }
+    fun validateConfirmPassword(password: String, confirmPassword: String): String? {
+        return when {
+            confirmPassword.isEmpty() -> "Please confirm your password"
+            password != confirmPassword -> "Passwords do not match"
+            else -> null
+        }
+    }
+
+
+
 }

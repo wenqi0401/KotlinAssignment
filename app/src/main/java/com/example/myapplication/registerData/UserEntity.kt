@@ -10,7 +10,8 @@ data class UserEntity(
     val password: String,
     val name: String,
     val gender: String,
-    val profilePicturePath: String?
+    val profilePicturePath: String?,
+    val address: String ,
 ) {
     fun toUser(): User {
         return User(
@@ -19,7 +20,8 @@ data class UserEntity(
             password = password,
             name = name,
             gender = gender,
-            profilePicturePath = profilePicturePath
+            profilePicturePath = profilePicturePath,
+            address = address
         )
     }
 
@@ -31,7 +33,8 @@ data class UserEntity(
                 password = user.password,
                 name = user.name,
                 gender = user.gender,
-                profilePicturePath = user.profilePicturePath
+                profilePicturePath = user.profilePicturePath,
+                address = user.address
             )
         }
     }

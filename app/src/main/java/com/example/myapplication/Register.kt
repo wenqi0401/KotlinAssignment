@@ -62,7 +62,7 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun Register(
     navController: NavHostController,
-    viewModel: AuthViewModel = viewModel()
+    viewModel: AuthViewModel = viewModel(),
 ) {
     var confirmPassword by remember { mutableStateOf("") }
     var showErrorDialog by remember { mutableStateOf(false) }
@@ -73,6 +73,10 @@ fun Register(
 
     val uiState = viewModel.uiState.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
+    val phoneError = viewModel.validatePhoneNumber(uiState.value.phoneNumber)
+    val passwordError = viewModel.validatePassword(uiState.value.password)
+
+    val confirmPasswordError = viewModel.validateConfirmPassword(uiState.value.password, confirmPassword)
 
     // Handle registration result - ONLY show dialogs, no navigation here
     LaunchedEffect(uiState.value.errorMessage, uiState.value.isLoading, registrationAttempted) {
@@ -187,10 +191,11 @@ fun Register(
                             focusedLeadingIconColor = Color(0xFFE53E3E)
                         ),
                         shape = RoundedCornerShape(16.dp),
+                        isError = phoneError!= null,
                         supportingText = {
                             Text(
-                                text = "10-15 digits, numbers only",
-                                color = Color.Gray,
+                                text = phoneError ?: "10-15 digits, numbers only",
+                                color = if (phoneError != null) Color(0xFFE53E3E) else Color.Gray,
                                 fontSize = 12.sp
                             )
                         }
@@ -236,10 +241,11 @@ fun Register(
                             focusedLeadingIconColor = Color(0xFFE53E3E)
                         ),
                         shape = RoundedCornerShape(16.dp),
+                        isError = passwordError != null,
                         supportingText = {
                             Text(
-                                text = "At least 8 characters, must contain letters and numbers",
-                                color = Color.Gray,
+                                text = passwordError ?: "At least 8 characters with letters and numbers",
+                                color = if (passwordError != null) Color(0xFFE53E3E) else Color.Gray,
                                 fontSize = 12.sp
                             )
                         }
@@ -283,6 +289,15 @@ fun Register(
                             cursorColor = Color(0xFFE53E3E),
                             focusedLeadingIconColor = Color(0xFFE53E3E)
                         ),
+
+                        isError = confirmPasswordError != null,
+                        supportingText = {
+                            Text(
+                                text = confirmPasswordError ?: "Re-enter your password to confirm",
+                                color = if (confirmPasswordError != null) Color(0xFFE53E3E) else Color.Gray,
+                                fontSize = 12.sp
+                            )
+                        },
                         shape = RoundedCornerShape(16.dp)
                     )
 
