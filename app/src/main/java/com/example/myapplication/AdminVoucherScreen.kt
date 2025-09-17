@@ -37,6 +37,7 @@ fun AdminVoucherManagementScreen(navController: NavController) {
     var showCreateDialog by remember { mutableStateOf(false) }
     var vouchers by remember { mutableStateOf<List<VoucherEntity>>(emptyList()) }
 
+
     LaunchedEffect(Unit) {
         voucherManager.initializeDefaultVouchers()
         vouchers = voucherManager.getAllVouchers()

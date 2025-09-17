@@ -301,6 +301,20 @@ fun PaymentPage(navController: NavHostController) {
                     onVoucherSelected = { selectedVoucher = it },
                     voucherManager = voucherManager
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = { navController.navigate("voucher_center") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("🎁 Redeem Voucher", color = Color.White, fontSize = 16.sp)
+                }
+
             }
 
             // Payment Method Selection
@@ -538,10 +552,10 @@ fun VoucherSelectionSection(
                             color = Color(0xFF4CAF50)
                         )
                         Text(
-                            "Discount: ${if 
-                                    (selectedVoucher.discountType == "FIXED") "RM" +
-                                    "${selectedVoucher.discountAmount.toInt()}" 
-                            else 
+                            "Discount: ${if
+                                                 (selectedVoucher.discountType == "FIXED") "RM" +
+                                    "${selectedVoucher.discountAmount.toInt()}"
+                            else
                                 "${selectedVoucher.discountAmount.toInt()}%"}",
                             color = Color.Red,
                             fontSize = 14.sp
@@ -1028,3 +1042,4 @@ fun OrderSuccessScreen() {
         }
     }
 }
+

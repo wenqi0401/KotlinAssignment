@@ -8,8 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-
-// Homepage新增功能的UI组件
 @Composable
 fun VoucherCard(voucher: VoucherEntity, onClick: (() -> Unit)? = null) {
     Card(
