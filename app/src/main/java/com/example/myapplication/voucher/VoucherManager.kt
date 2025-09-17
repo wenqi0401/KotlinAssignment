@@ -149,6 +149,48 @@ class VoucherManager private constructor(private val context: Context) {
         }
     }
 
+    suspend fun checkUserHasVoucher(phoneNumber: String, voucherCode: String): Boolean {
+        return try {
+            val voucher = voucherDao.getVoucherByCode(voucherCode)
+            if (voucher != null) {
+                val existingUserVouchers = voucherDao.getUserVouchers(phoneNumber)
+                existingUserVouchers.any { it.voucherId == voucher.id }
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun giveVoucherToUserForce(userPhoneNumber: String, voucher: VoucherEntity, allowDuplicate: Boolean = false): Boolean {
+        return try {
+            if (!allowDuplicate) {
+                // Use existing logic that prevents duplicates
+                return giveVoucherToUser(userPhoneNumber, voucher)
+            } else {
+                // Force send even if user already has this voucher
+                val userVoucher = UserVoucherEntity(
+                    id = "UV_${System.currentTimeMillis()}_${userPhoneNumber.takeLast(4)}_${System.nanoTime()}",
+                    userPhoneNumber = userPhoneNumber,
+                    voucherId = voucher.id,
+                    isUsed = false,
+                    usedDate = null
+                )
+
+                voucherDao.insertUserVoucher(userVoucher)
+
+                // Update voucher usage count
+                val updatedVoucher = voucher.copy(currentUsage = voucher.currentUsage + 1)
+                voucherDao.updateVoucher(updatedVoucher)
+
+                return true
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
 
 
 }

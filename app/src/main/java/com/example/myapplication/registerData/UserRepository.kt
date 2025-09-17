@@ -146,5 +146,15 @@ class UserRepository {
         usersCollection.document(userId).update("address", address).await()
     }
 
+    suspend fun checkUserExists(phoneNumber: String): Boolean {
+        return try {
+            // Use your existing getUserByPhone method
+            val user = getUserByPhone(phoneNumber)
+            user != null
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking if user exists: ${e.message}")
+            false
+        }
+    }
 
 }

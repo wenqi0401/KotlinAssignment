@@ -33,7 +33,6 @@ fun VoucherCenterScreen(navController: NavHostController) {
     var showMessage by remember { mutableStateOf("") }
     var userVouchers by remember { mutableStateOf<List<Pair<com.example.myapplication.voucher.UserVoucherEntity, com.example.myapplication.voucher.VoucherEntity>>>(emptyList()) }
 
-    // 初始化加载用户的 vouchers
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
             userVouchers = voucherManager.getUserVouchers(currentUser)
