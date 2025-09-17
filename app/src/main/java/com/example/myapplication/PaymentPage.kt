@@ -33,13 +33,16 @@ import com.example.myapplication.voucher.VoucherManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.myapplication.voucher.FirebaseVoucherService
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaymentPage(navController: NavHostController) {
     val context = LocalContext.current
-    val voucherManager = remember { VoucherManager.getInstance(context) }
+
+    val firebaseVoucherService = remember { FirebaseVoucherService() }
+    val voucherManager = remember { VoucherManager.getInstance(context, firebaseVoucherService) }
     val coroutineScope = rememberCoroutineScope()
     val firebaseService = remember { FirebaseService() }
     val repository = remember { OrderRepository(context, firebaseService) }

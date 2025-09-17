@@ -30,4 +30,9 @@ interface VoucherDao {
 
     @Query("DELETE FROM user_vouchers WHERE id = :userVoucherId")
     suspend fun deleteUserVoucher(userVoucherId: String)
+
+    @Query("SELECT * FROM user_vouchers")
+    suspend fun getAllUserVouchers(): List<UserVoucherEntity>
+
+
 }

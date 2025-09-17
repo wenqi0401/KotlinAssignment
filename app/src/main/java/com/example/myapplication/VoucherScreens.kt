@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.myapplication.orderData.UserSession
+import com.example.myapplication.voucher.FirebaseVoucherService
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,7 +29,9 @@ import kotlinx.coroutines.launch
 fun VoucherCenterScreen(navController: NavHostController) {
     val currentUser = UserSession.getCurrentUser()
     val context = LocalContext.current
-    val voucherManager = remember { VoucherManager.getInstance(context) }
+
+    val firebaseVoucherService = remember { FirebaseVoucherService() }
+    val voucherManager = remember { VoucherManager.getInstance(context, firebaseVoucherService) }
     val coroutineScope = rememberCoroutineScope()
 
     var voucherCode by remember { mutableStateOf("") }

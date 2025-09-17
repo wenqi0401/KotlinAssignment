@@ -30,7 +30,9 @@ import java.util.*
 @Composable
 fun AdminVoucherManagementScreen(navController: NavController) {
     val context = LocalContext.current
-    val voucherManager = remember { VoucherManager.getInstance(context) }
+
+    val firebaseVoucherService = remember { FirebaseVoucherService() }
+    val voucherManager = remember { VoucherManager.getInstance(context, firebaseVoucherService) }
     val userRepository = remember { UserRepository() }
     val coroutineScope = rememberCoroutineScope()
 
