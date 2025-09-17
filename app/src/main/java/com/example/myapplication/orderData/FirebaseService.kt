@@ -6,6 +6,7 @@ import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.text.get
 
 @Singleton
 class FirebaseService @Inject constructor() {
@@ -191,6 +192,32 @@ class FirebaseService @Inject constructor() {
         } catch (e: Exception) {
             Log.e("FirebaseService", "Error getting rating count from Firebase", e)
             0
+        }
+    }
+
+    suspend fun getTopSalesItemsFromFirebase(topN: Int = 8): List<Pair<String, Int>> {
+        return try {
+            val querySnapshot = ordersCollection.get().await()
+            val itemCountMap = mutableMapOf<String, Int>()
+
+            for (document in querySnapshot.documents) {
+                val data = document.data ?: continue
+                val items = data["items"] as? List<Map<String, Any>> ?: continue
+                for (item in items) {
+                    val name = item["name"] as? String ?: continue
+                    val quantity = (item["quantity"] as? Long)?.toInt() ?: (item["quantity"] as? Int) ?: 0
+                    itemCountMap[name] = itemCountMap.getOrDefault(name, 0) + quantity
+                }
+            }
+
+            // Sort by quantity sold, descending, and take top N
+            itemCountMap.entries
+                .sortedByDescending { it.value }
+                .take(topN)
+                .map { it.key to it.value }
+        } catch (e: Exception) {
+            Log.e("FirebaseService", "Error getting top sales items", e)
+            emptyList()
         }
     }
 

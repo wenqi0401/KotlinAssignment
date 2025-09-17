@@ -31,7 +31,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,7 +46,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.myapplication.orderData.FirebaseService
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.min
 
 
@@ -219,24 +225,37 @@ fun AutoScrollingImageCarousel(navController: NavHostController) {
 @Composable
 fun TopSalesCarousel(menuManager: MilkTeaMenuManager, onItemClick: (MenuItem) -> Unit) {
     // Define your top sales items directly by their names or other identifiers
-    val topSalesItemNames = remember {
-        listOf(
-            "Fresh Lemonade",
-            "Signature King Cone",
-            "Chocolate Lucky Sundae",
-            "Strawberry Creamy Drink",
-            "Brown Sugar Milk Tea",
-            "Passion Fruit Bubble Tea",
-            "Lemon Jasmine Tea",
-            "Pearl Milk Tea"
-        )
-    }
 
-    val topSalesItems = remember {
-        menuManager.getAllMenuItems().filter { item ->
-            topSalesItemNames.contains(item.name)
+    val firebaseService = remember { FirebaseService() }
+    var topSalesItems by remember { mutableStateOf<List<MenuItem>>(emptyList()) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val defaultTopSalesItemNames = listOf(
+        "Fresh Lemonade",
+        "Signature King Cone",
+        "Chocolate Lucky Sundae",
+        "Strawberry Creamy Drink",
+        "Brown Sugar Milk Tea",
+        "Passion Fruit Bubble Tea",
+        "Lemon Jasmine Tea",
+        "Pearl Milk Tea"
+    )
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            val topSalesNames = firebaseService.getTopSalesItemsFromFirebase()
+            val namesToUse = if (topSalesNames.isEmpty()) {
+                defaultTopSalesItemNames.map { it to 0 }
+            } else {
+                topSalesNames
+            }
+            topSalesItems = namesToUse.mapNotNull { (name, _) ->
+                menuManager.getItemByName(name)
+            }
         }
     }
+
+
 
     val pagerState = rememberPagerState(
         pageCount = { (topSalesItems.size + 1) / 2 } // Show 2 items per page
