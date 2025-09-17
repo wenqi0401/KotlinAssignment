@@ -217,11 +217,12 @@ fun Register(
                                 tint = Color(0xFFE53E3E)
                             )
                         },
+
                         trailingIcon = {
-                            val image = if (passwordVisible) Icons.Default.Lock else Icons.Default.Done
+                            val icon = if (passwordVisible) painterResource(R.drawable.baseline_visibility_off_24) else painterResource(R.drawable.outline_visibility_24)
                             val description = if (passwordVisible) "Hide password" else "Show password"
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(imageVector = image, contentDescription = description)
+                                Icon(painter = icon, contentDescription = description)
                             }
                         },
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -267,10 +268,10 @@ fun Register(
                             )
                         },
                         trailingIcon = {
-                            val image = if (confirmPasswordVisible) Icons.Default.Lock else Icons.Default.Done
+                            val icon = if (confirmPasswordVisible) painterResource(R.drawable.baseline_visibility_off_24) else painterResource(R.drawable.outline_visibility_24)
                             val description = if (confirmPasswordVisible) "Hide password" else "Show password"
                             IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                                Icon(imageVector = image, contentDescription = description)
+                                Icon(painter = icon, contentDescription = description)
                             }
                         },
                         visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),

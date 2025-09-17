@@ -205,10 +205,14 @@ fun LoginScreen(
                             )
                         },
                         trailingIcon = {
-                            val image = if (passwordVisible) Icons.Default.Lock else Icons.Default.Done
+                            val icon = if (passwordVisible) {
+                                painterResource(id = R.drawable.baseline_visibility_off_24)
+                            } else {
+                                painterResource(id = R.drawable.outline_visibility_24)
+                            }
                             val description = if (passwordVisible) "Hide password" else "Show password"
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(imageVector = image, contentDescription = description)
+                                Icon(painter = icon, contentDescription = description)
                             }
                         },
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
