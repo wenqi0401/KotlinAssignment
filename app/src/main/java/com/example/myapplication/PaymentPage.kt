@@ -25,8 +25,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.myapplication.orderData.*
+import com.example.myapplication.registerData.AppDatabase
 import com.example.myapplication.voucher.UserVoucherEntity
 import com.example.myapplication.voucher.VoucherEntity
 import com.example.myapplication.voucher.VoucherManager
@@ -72,12 +74,39 @@ fun PaymentPage(navController: NavHostController) {
         }
     }
 
-    // State variables for user inputs
+    // State variables for user inputs - Initialize with user data
     var address by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
     var comment by remember { mutableStateOf("") }
     var selectedPaymentMethod by remember { mutableStateOf("") }
     var cardNumber by remember { mutableStateOf("") }
+
+    // Add AuthViewModel to get user data
+    val authViewModel: AuthViewModel = viewModel()
+    val userState by authViewModel.uiState.collectAsState()
+
+    // Load user profile data to pre-populate fields
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            // Load user data from AuthViewModel if not already loaded
+            if (userState.currentUser == null) {
+                authViewModel.hydrateFromSession()
+            }
+        }
+    }
+
+    // Pre-populate fields when user data is loaded
+    LaunchedEffect(userState.currentUser) {
+        userState.currentUser?.let { user ->
+            // Only set initial values if fields are still empty (to avoid overwriting user edits)
+            if (address.isEmpty() && user.address.isNotBlank()) {
+                address = user.address
+            }
+            if (phoneNumber.isEmpty()) {
+                phoneNumber = user.phoneNumber
+            }
+        }
+    }
 
     // Validation state
     var showValidationErrors by remember { mutableStateOf(false) }
@@ -88,7 +117,7 @@ fun PaymentPage(navController: NavHostController) {
 
     var showOrderSuccess by remember { mutableStateOf(false) }
 
-    // Validation function
+    // Validation function (remains the same)
     fun validateForm(): Boolean {
         var isValid = true
 
@@ -176,7 +205,6 @@ fun PaymentPage(navController: NavHostController) {
             )
         },
         bottomBar = {
-
             Button(
                 onClick = {
                     // Validate form before processing
@@ -193,7 +221,8 @@ fun PaymentPage(navController: NavHostController) {
                         return@Button
                     }
 
-                    val deliveryPhoneNumber = if (phoneNumber.isNotEmpty()) phoneNumber else currentUserPhone
+                    // Use the phone number from the form (which could be modified by user)
+                    val deliveryPhoneNumber = phoneNumber
 
                     val orderItems = cartItems.map { cartItem ->
                         OrderItem(

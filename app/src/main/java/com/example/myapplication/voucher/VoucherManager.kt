@@ -87,21 +87,22 @@ class VoucherManager private constructor(
         }
     }
 
-    suspend fun getAllVouchers(): List<VoucherEntity> {
+    suspend fun getAllVouchers(forceRefresh: Boolean = false): List<VoucherEntity> {
         return withContext(Dispatchers.IO) {
             try {
-                // Try local database first
+                if (forceRefresh) {
+                    return@withContext forceSyncVouchers()
+                }
+
                 val localVouchers = voucherDao.getAllVouchers()
                 if (localVouchers.isNotEmpty()) {
                     Log.d("VoucherManager", "Retrieved ${localVouchers.size} vouchers from local DB")
                     return@withContext localVouchers
                 }
 
-                // If no local vouchers, try Firebase
                 Log.d("VoucherManager", "No local vouchers found, checking Firebase...")
                 val firebaseVouchers = firebaseVoucherService.getAllVouchersFromFirebase()
 
-                // Save Firebase vouchers to local database
                 firebaseVouchers.forEach { voucher ->
                     voucherDao.insertVoucher(voucher)
                 }
@@ -115,6 +116,7 @@ class VoucherManager private constructor(
             }
         }
     }
+
 
     suspend fun addVoucher(voucher: VoucherEntity) {
         withContext(Dispatchers.IO) {
@@ -184,7 +186,7 @@ class VoucherManager private constructor(
                 }
 
                 val userVoucher = UserVoucherEntity(
-                    id = "UV_${System.currentTimeMillis()}_${userPhoneNumber.takeLast(4)}",
+                    id = "${voucher.code}_${userPhoneNumber.takeLast(4)}", // 例如: WELCOME5_1234
                     userPhoneNumber = userPhoneNumber,
                     voucherId = voucher.id,
                     isUsed = false,
@@ -354,7 +356,7 @@ class VoucherManager private constructor(
                     return@withContext giveVoucherToUser(userPhoneNumber, voucher)
                 } else {
                     val userVoucher = UserVoucherEntity(
-                        id = "UV_${System.currentTimeMillis()}_${userPhoneNumber.takeLast(4)}_${System.nanoTime()}",
+                        id = "${voucher.code}_${userPhoneNumber.takeLast(4)}_${System.currentTimeMillis() / 1000}", // 使用秒级时间戳
                         userPhoneNumber = userPhoneNumber,
                         voucherId = voucher.id,
                         isUsed = false,
@@ -372,12 +374,37 @@ class VoucherManager private constructor(
                     firebaseVoucherService.syncUserVoucherToFirebase(userVoucher)
                     firebaseVoucherService.syncVoucherToFirebase(updatedVoucher)
 
-                    Log.d("VoucherManager", "Voucher force given to user and synced: ${voucher.id} -> $userPhoneNumber")
+                    Log.d(
+                        "VoucherManager",
+                        "Voucher force given to user and synced: ${voucher.id} -> $userPhoneNumber"
+                    )
                     true
                 }
             } catch (e: Exception) {
                 Log.e("VoucherManager", "Error force giving voucher to user", e)
                 false
+            }
+        }
+    }
+
+    suspend fun forceSyncVouchers(): List<VoucherEntity> {
+        return withContext(Dispatchers.IO) {
+            try {
+                Log.d("VoucherManager", "Force syncing vouchers from Firebase...")
+
+                val firebaseVouchers = firebaseVoucherService.getAllVouchersFromFirebase()
+
+                voucherDao.deleteAllVouchers()
+                firebaseVouchers.forEach { voucher ->
+                    voucherDao.insertVoucher(voucher)
+                }
+
+                Log.d("VoucherManager", "Force sync completed: ${firebaseVouchers.size} vouchers")
+                firebaseVouchers
+
+            } catch (e: Exception) {
+                Log.e("VoucherManager", "Error force syncing vouchers", e)
+                voucherDao.getAllVouchers()
             }
         }
     }

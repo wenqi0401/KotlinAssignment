@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/myapplication/registerData/UserDao.kt
 package com.example.myapplication.registerData
 
 import androidx.room.Dao

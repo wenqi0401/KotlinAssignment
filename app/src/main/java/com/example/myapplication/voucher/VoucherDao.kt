@@ -19,6 +19,9 @@ interface VoucherDao {
     @Query("DELETE FROM vouchers WHERE id = :voucherId")
     suspend fun deleteVoucher(voucherId: String)
 
+    @Query("DELETE FROM vouchers")
+    suspend fun deleteAllVouchers()
+
     @Query("SELECT * FROM user_vouchers WHERE userPhoneNumber = :userPhoneNumber")
     suspend fun getUserVouchers(userPhoneNumber: String): List<UserVoucherEntity>
 
@@ -33,6 +36,8 @@ interface VoucherDao {
 
     @Query("SELECT * FROM user_vouchers")
     suspend fun getAllUserVouchers(): List<UserVoucherEntity>
+
+
 
 
 }
