@@ -2,8 +2,6 @@ package com.example.myapplication.orderData
 
 import android.util.Log
 
-
-// UserSession remains the same
 object UserSession {
     var currentUserPhone: String? = null
 

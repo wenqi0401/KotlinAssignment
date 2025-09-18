@@ -99,12 +99,19 @@ fun PaymentPage(navController: NavHostController) {
         cardNumberError = ""
 
         // Validate phone number
+        val phoneRegex = Regex("^01[0-9]{8,9}\$") // 01 + 8 or 9 digits
+
         if (phoneNumber.isBlank()) {
             phoneNumberError = "Phone number is required"
             isValid = false
-        } else if (phoneNumber.length < 10) {
-            phoneNumberError = "Phone number must be at least 10 digits"
+        } else if (!phoneNumber.all { it.isDigit() }) {
+            phoneNumberError = "Phone number can only contain digits"
             isValid = false
+        } else if (!phoneRegex.matches(phoneNumber)) {
+            phoneNumberError = "Invalid Malaysian phone number format"
+            isValid = false
+        } else {
+            phoneNumberError = ""
         }
 
         // Validate address
@@ -179,17 +186,13 @@ fun PaymentPage(navController: NavHostController) {
 
                     val orderId = "MX-" + (1000..9999).random()
 
-                    // 总是使用已登录用户的手机号码作为userPhoneNumber
                     val currentUserPhone = UserSession.getCurrentUser()
 
                     if (currentUserPhone == null) {
-                        // 如果没有用户登录，导航到登录页面
                         navController.navigate("login")
                         return@Button
                     }
 
-                    // 使用付款表单的电话号码作为配送联系方式
-                    // 但使用已登录用户的电话号码来关联订单
                     val deliveryPhoneNumber = if (phoneNumber.isNotEmpty()) phoneNumber else currentUserPhone
 
                     val orderItems = cartItems.map { cartItem ->
@@ -205,7 +208,7 @@ fun PaymentPage(navController: NavHostController) {
 
                     val order = Order(
                         orderId = orderId,
-                        userPhoneNumber = currentUserPhone,  // 这将订单链接到已登录的用户
+                        userPhoneNumber = currentUserPhone,
                         items = orderItems,
                         subtotal = subtotal,
                         deliveryFee = deliveryFee,
@@ -213,7 +216,7 @@ fun PaymentPage(navController: NavHostController) {
                         voucher = voucherDiscount,
                         total = total,
                         deliveryAddress = address,
-                        phoneNumber = deliveryPhoneNumber,  // 这是配送联系电话
+                        phoneNumber = deliveryPhoneNumber,
                         comment = comment,
                         paymentMethod = selectedPaymentMethod,
                         cardNumber = if (selectedPaymentMethod == "visa") cardNumber else null

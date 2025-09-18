@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/myapplication/di/ServiceLocator.kt
 package com.example.myapplication.di
 
 import android.content.Context

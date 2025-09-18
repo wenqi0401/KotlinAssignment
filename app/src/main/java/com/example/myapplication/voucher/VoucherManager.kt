@@ -382,29 +382,4 @@ class VoucherManager private constructor(
         }
     }
 
-    // ===== SYNC OPERATIONS =====
-
-    suspend fun syncAllVouchersToFirebase() {
-        withContext(Dispatchers.IO) {
-            try {
-                val localVouchers = voucherDao.getAllVouchers()
-                firebaseVoucherService.syncAllVouchersToFirebase(localVouchers)
-                Log.d("VoucherManager", "Synced all vouchers to Firebase")
-            } catch (e: Exception) {
-                Log.e("VoucherManager", "Error syncing all vouchers to Firebase", e)
-            }
-        }
-    }
-
-    suspend fun syncAllUserVouchersToFirebase() {
-        withContext(Dispatchers.IO) {
-            try {
-                val localUserVouchers = voucherDao.getAllUserVouchers()
-                firebaseVoucherService.syncAllUserVouchersToFirebase(localUserVouchers)
-                Log.d("VoucherManager", "Synced all user vouchers to Firebase")
-            } catch (e: Exception) {
-                Log.e("VoucherManager", "Error syncing all user vouchers to Firebase", e)
-            }
-        }
-    }
 }

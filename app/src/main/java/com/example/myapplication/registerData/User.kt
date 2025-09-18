@@ -1,6 +1,5 @@
 package com.example.myapplication.registerData
 
-//Firebase uses plain data classes
 data class User(
     val id: String = "", // Firebase uses String IDs
     val phoneNumber: String = "",

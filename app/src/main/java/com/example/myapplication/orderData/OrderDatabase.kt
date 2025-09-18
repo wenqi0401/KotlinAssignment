@@ -11,7 +11,7 @@ import com.example.myapplication.voucher.UserVoucherEntity
 
 @Database(
     entities = [Order::class, VoucherEntity::class, UserVoucherEntity::class],
-    version = 3, // Update version number
+    version = 3,
     exportSchema = false
 )
 
