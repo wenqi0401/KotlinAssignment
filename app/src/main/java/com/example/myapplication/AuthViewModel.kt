@@ -25,6 +25,7 @@ class AuthViewModel : ViewModel() {
             syncRepo.startSync(userId)
         }
     }
+
     fun updateUserAddress(newAddress: String) {
         val currentUser = _uiState.value.currentUser
         if (currentUser != null) {
@@ -354,13 +355,16 @@ class AuthViewModel : ViewModel() {
         }
     }
     // In AuthViewModel.kt
+
     fun validatePhoneNumber(phone: String): String? {
+        val phoneRegex = Regex("^01[0-9]{8,9}$")
         return when {
-            phone.isEmpty() -> "Phone number is required"
-            !phone.matches(Regex("^\\d{10,15}$")) -> "Phone number must be 10-15 digits"
+            phone.isBlank() -> "Phone number cannot be empty"
+            !phoneRegex.matches(phone) -> "Invalid phone number format (should start with 01 and have 10 or 11 digits)"
             else -> null
         }
     }
+
 
     fun validatePassword(password: String): String? {
         return when {
